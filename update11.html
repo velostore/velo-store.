@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velo Store | متجر ڤيلو لخدمات فورزا</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs (Compat versions to prevent global script loading errors) -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        velo: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            dark: '#0f0a1c',
+                            card: '#18122b',
+                            input: '#241b3f'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f0a1c;
+            color: #f5f3ff;
+            overflow-x: hidden;
+        }
+        /* Custom neon effect for active states */
+        .neon-border {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+            border: 1px solid rgba(139, 92, 246, 0.6);
+        }
+        .neon-text {
+            text-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+        }
+        /* Hide scrollbars but keep functionality */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0a1c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8b5cf6;
+            border-radius: 10px;
+        }
+        .gradient-bg {
+            background: radial-gradient(circle at top, #3b1e70 0%, #0f0a1c 70%);
+        }
+        
+        /* Premium custom animations */
+        @keyframes floatEffect {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        .sticker-car {
+            animation: floatEffect 4s infinite ease-in-out;
+            filter: drop-shadow(0 10px 20px rgba(139, 92, 246, 0.4));
+        }
+
+        @keyframes pulseNeon {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 5px rgba(139, 92, 246, 0.5)); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)); }
+        }
+        .glow-neon-active {
+            animation: pulseNeon 2.5s infinite ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .shine-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex flex-col justify-between">
+
+    <!-- Top Notice bar -->
+    <div class="bg-velo-700 text-white text-center py-2 text-xs md:text-sm font-semibold tracking-wide px-4">
+        ⚡ تمكيس آمن 100% وبدون باند مع تسليم سريع جداً للبيسي والاكسبوكس والمزاد للسوني!
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="border-b border-velo-800/40 bg-velo-dark/80 backdrop-blur-md sticky top-0 z-50 px-4 py-4 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Brand Logo & Name -->
+            <a href="#" class="flex items-center gap-2.5 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-velo-600 to-purple-400 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-velo-600/30 group-hover:scale-105 transition-transform duration-200">
+                    V
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-white group-hover:text-velo-500 transition-colors">
+                        VELO <span class="text-velo-500 text-xs font-bold tracking-widest block -mt-1">VLO STORE</span>
+                    </h1>
+                </div>
+            </a>
+
+            <!-- Navigation Links (Desktops) -->
+            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a href="#home" class="hover:text-velo-500 transition-colors text-velo-500">الرئيسية</a>
+                <a href="#products-section" class="hover:text-velo-500 transition-colors">خدمات فورزا 5</a>
+                <a href="#products-section" class="hover:text-velo-500 transition-colors">خدمات فورزا 6</a>
+                <a href="#how-to-order" class="hover:text-velo-500 transition-colors">طريقة طلب المزاد</a>
+                <a href="#reviews-section" class="hover:text-velo-500 transition-colors">آراء العملاء</a>
+                <button onclick="openAdminModal()" class="text-xs bg-velo-800/40 hover:bg-velo-600 text-velo-100 px-3 py-1.5 rounded-lg transition-colors border border-velo-700/50">
+                    <i class="fa-solid fa-lock-open mr-1"></i> لوحة الإدارة
+                </button>
+            </nav>
+
+            <!-- Action Buttons (Cart / Contact) -->
+            <div class="flex items-center gap-3">
+                <!-- Cart Button -->
+                <button onclick="openCartModal()" class="relative p-2.5 bg-velo-card rounded-xl hover:bg-velo-800/50 transition-colors border border-velo-800/50">
+                    <i class="fa-solid fa-shopping-cart text-lg text-velo-500"></i>
+                    <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                
+                <!-- Whatsapp Support Button -->
+                <a href="https://wa.me/966507642128" target="_blank" class="hidden sm:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>الدعم الفني</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+        <!-- Hero Section -->
+        <section id="home" class="mb-12 text-center md:text-right md:flex md:items-center md:justify-between gap-8 py-8 bg-velo-card/40 rounded-3xl p-6 md:p-10 border border-velo-800/30 relative overflow-hidden">
+            
+            <div class="md:w-1/2 space-y-6 relative z-10">
+                <div class="inline-flex items-center gap-2 bg-velo-800/50 text-velo-500 text-xs font-bold px-3 py-1.5 rounded-full border border-velo-700/50">
+                    <i class="fa-solid fa-trophy animate-bounce text-yellow-500"></i>
+                    افضل متجر تمكيس فورزا 5/6
+                </div>
+                
+                <!-- Redesigned Headline with graphics for maximum luxury look -->
+                <div class="space-y-4">
+                    <h2 class="text-3xl md:text-5xl font-black leading-tight text-white">
+                        تمكيس حسابك بالكامل <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-velo-500 to-purple-400">بأقوى العروض الحصرية!</span>
+                    </h2>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed">
+                        احصل على ملايين الكاش بطريقة المزاد الآمنة 100% للسوني، أو احصل على تمكيس شامل للحساب بالكامل (الويل سبنز والسيارات النادرة) <span class="text-velo-500 font-bold">لأصحاب البيسي والإكس بوكس فقط</span> بآمان تام وبدون أي مشاكل!
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+                    <a href="#products-section" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-velo-600/30 flex items-center gap-2 text-sm relative overflow-hidden shine-button">
+                        <i class="fa-solid fa-gamepad"></i>
+                        عرض الخدمات والمنتجات
+                    </a>
+                    <a href="#how-to-order" class="bg-velo-card border border-velo-800 text-gray-300 hover:text-white px-5 py-3 rounded-xl text-sm font-semibold transition-colors">
+                        طريقة عمل المزاد للسوني
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Upgraded Luxury Section: Hand-drawn Vector Cyberpunk Car and Coins Display -->
+            <div class="md:w-1/2 mt-8 md:mt-0 flex justify-center relative">
+                <!-- Ambient Glow Behind -->
+                <div class="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-velo-500 to-purple-600 opacity-20 blur-xl"></div>
+                
+                <div class="relative bg-velo-card border border-velo-700/40 rounded-3xl overflow-hidden shadow-2xl w-full max-w-[430px] p-5">
+                    
+                    <!-- Sticker Header style representing VLO Design -->
+                    <div class="relative rounded-2xl h-72 flex flex-col justify-between p-5 overflow-hidden" style="background: linear-gradient(135deg, #1c1135 0%, #0c071a 100%);">
+                        <!-- Technical Grid Overlay -->
+                        <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(#8b5cf6 1px, transparent 1px), linear-gradient(90deg, #8b5cf6 1px, transparent 1px); background-size: 15px 15px;"></div>
+                        
+                        <!-- Top status badges -->
+                        <div class="flex justify-between items-center z-20">
+                            <span class="text-[9px] font-black text-velo-500 bg-velo-900/60 border border-velo-700/60 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mr-0.5"></i> VLO Official Edition
+                            </span>
+                            <span class="text-[9px] font-black text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-2.5 py-1 rounded-full uppercase">
+                                <i class="fa-solid fa-bolt mr-0.5"></i> أمان 100%
+                            </span>
+                        </div>
+
+                        <!-- 1. DRAWN CYBER CAR STICKER (High-fidelity inline SVG Vector Car Illustration) -->
+                        <div class="w-full flex justify-center py-2 z-20 relative">
+                            <!-- Floating Vector Sticker Wrapper -->
+                            <div class="w-64 h-32 sticker-car relative">
+                                <!-- Neon Outer Vector Car Outline Design (Pure SVG Art) -->
+                                <svg viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full glow-neon-active">
+                                    <!-- Car Main Cabin/Roof Line -->
+                                    <path d="M120 100 L180 55 L320 55 L380 100 Z" fill="url(#cabinGradient)" stroke="#8b5cf6" stroke-width="6" stroke-linejoin="round" />
+                                    <!-- Car Body Lower -->
+                                    <path d="M40 100 L440 100 L460 145 L40 145 Z" fill="url(#bodyGradient)" stroke="#7c3aed" stroke-width="7" stroke-linejoin="round" />
+                                    <!-- Windshield reflection -->
+                                    <path d="M185 62 L240 62 L215 95 L145 95 Z" fill="#d8b4fe" opacity="0.4" />
+                                    <path d="M255 62 L310 62 L345 95 L275 95 Z" fill="#d8b4fe" opacity="0.3" />
+                                    <!-- Neon Side Wing / Spoilers -->
+                                    <path d="M30 90 L80 100 L40 100 Z" fill="#a78bfa" stroke="#c084fc" stroke-width="2" />
+                                    <path d="M410 100 L450 75 L455 100 Z" fill="#a78bfa" stroke="#c084fc" stroke-width="3" />
+                                    <!-- Front & Rear Wheel Arches -->
+                                    <path d="M85 145 A 40 40 0 0 1 165 145" fill="#0f0a1c" stroke="#8b5cf6" stroke-width="5" />
+                                    <path d="M315 145 A 40 40 0 0 1 395 145" fill="#0f0a1c" stroke="#8b5cf6" stroke-width="5" />
+                                    <!-- Futuristic Wheels with Glowing Hubcaps -->
+                                    <circle cx="125" cy="145" r="28" fill="#1c1135" stroke="#7c3aed" stroke-width="5" />
+                                    <circle cx="125" cy="145" r="16" fill="url(#wheelNeon)" />
+                                    <circle cx="125" cy="145" r="6" fill="#ffffff" />
+                                    
+                                    <circle cx="355" cy="145" r="28" fill="#1c1135" stroke="#7c3aed" stroke-width="5" />
+                                    <circle cx="355" cy="145" r="16" fill="url(#wheelNeon)" />
+                                    <circle cx="355" cy="145" r="6" fill="#ffffff" />
+                                    <!-- Front Cyber Headlight Glowing bar -->
+                                    <path d="M40 115 L100 118" stroke="#38bdf8" stroke-width="6" stroke-linecap="round" />
+                                    <!-- Rear Cyber Taillight Glowing bar -->
+                                    <path d="M440 112 L455 112" stroke="#ef4444" stroke-width="8" stroke-linecap="round" />
+                                    <!-- Underglow Neon Light -->
+                                    <path d="M140 155 L280 155" stroke="#c084fc" stroke-width="12" stroke-linecap="round" opacity="0.8" />
+                                    
+                                    <!-- Definitions for Gradients -->
+                                    <defs>
+                                        <linearGradient id="cabinGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#4c1d95" />
+                                            <stop offset="100%" stop-color="#1e1b4b" />
+                                        </linearGradient>
+                                        <linearGradient id="bodyGradient" x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="0%" stop-color="#7c3aed" />
+                                            <stop offset="50%" stop-color="#a78bfa" />
+                                            <stop offset="100%" stop-color="#6d28d9" />
+                                        </linearGradient>
+                                        <radialGradient id="wheelNeon" cx="50%" cy="50%" r="50%">
+                                            <stop offset="0%" stop-color="#ffffff" />
+                                            <stop offset="60%" stop-color="#8b5cf6" />
+                                            <stop offset="100%" stop-color="#0f0a1c" />
+                                        </radialGradient>
+                                    </defs>
+                                </svg>
+                                <!-- Sticker Shadow Backdrop -->
+                                <div class="absolute -bottom-2 left-12 right-12 h-4 bg-velo-500/30 blur-md rounded-full -z-10"></div>
+                            </div>
+                        </div>
+
+                        <!-- 2. GAME COINS & SPINS GRAPHICAL REPRESENTATION -->
+                        <div class="grid grid-cols-2 gap-3 z-20 mt-2">
+                            <!-- Cash CR Stack Graphic Card -->
+                            <div class="bg-velo-dark/75 border border-velo-800/80 rounded-xl p-2.5 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 shrink-0">
+                                    <i class="fa-solid fa-coins text-yellow-400 text-sm"></i>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-gray-400 block uppercase font-bold">رصيد الكاش</span>
+                                    <span class="text-xs font-black text-yellow-400 font-mono tracking-wide">999M CR</span>
+                                </div>
+                            </div>
+
+                            <!-- Wheelspin Wheel Graphic Card -->
+                            <div class="bg-velo-dark/75 border border-velo-800/80 rounded-xl p-2.5 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center border border-purple-500/20 shrink-0">
+                                    <i class="fa-solid fa-arrows-spin text-purple-400 text-sm animate-spin" style="animation-duration: 6s;"></i>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-gray-400 block uppercase font-bold">ويل سبنز</span>
+                                    <span class="text-xs font-black text-purple-400 font-mono tracking-wide">1M+ SPINS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Details of the Hero Feature Card -->
+                    <div class="p-4 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-400 font-bold">باقة الفخامة والأمان الكامل</span>
+                            <div class="flex text-amber-500 gap-0.5">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-md font-bold text-white">التمكيس الشامل للبيسي والاكسبوكس والمزاد للسوني</h4>
+                        <p class="text-[11px] text-gray-400">تعديل حسابات فورزا بآمان 100% بدون أي باند أو تصفير وبطرق معتمدة وقانونية.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div class="bg-velo-card p-4 rounded-2xl border border-velo-800/40 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-velo-900/50 flex items-center justify-center text-velo-500">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-white">آمن ومجرّب</h5>
+                    <p class="text-[10px] text-gray-400">طرق شرعية بدون أي تصفير</p>
+                </div>
+            </div>
+            <div class="bg-velo-card p-4 rounded-2xl border border-velo-800/40 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-velo-900/50 flex items-center justify-center text-velo-500">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-white">تسليم فوري</h5>
+                    <p class="text-[10px] text-gray-400">تنفيذ وشراء المزاد سريعاً</p>
+                </div>
+            </div>
+            <div class="bg-velo-card p-4 rounded-2xl border border-velo-800/40 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-velo-900/50 flex items-center justify-center text-velo-500">
+                    <i class="fa-solid fa-credit-card text-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-white">تحويل بنكي مباشر</h5>
+                    <p class="text-[10px] text-gray-400">تأكيد المبيعات والطلبات فوراً</p>
+                </div>
+            </div>
+            <div class="bg-velo-card p-4 rounded-2xl border border-velo-800/40 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-velo-900/50 flex items-center justify-center text-velo-500">
+                    <i class="fa-solid fa-gavel text-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-sm font-bold text-white">شراء مزاد السوني</h5>
+                    <p class="text-[10px] text-gray-400">لا نطلب دخول حساب السوني</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Title: Products -->
+        <div id="products-section" class="text-center md:text-right mb-8">
+            <h3 class="text-2xl md:text-3xl font-black text-white flex items-center justify-center md:justify-start gap-2">
+                <span class="w-2.5 h-6 bg-velo-600 rounded-full inline-block"></span>
+                قائمة الخدمات المتاحة للطلب
+            </h3>
+            <p class="text-xs md:text-sm text-gray-400 mt-2">يرجى اختيار المنصة والخدمة المناسبة لك لتعبئة طلبك وتعديله</p>
+        </div>
+
+        <!-- Grid of Products (Dynamic Target Container) -->
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <!-- سيتم تعبئة المنتجات تلقائياً بواسطة الجافا سكريبت في خلايا شبكية متناسقة ثنائية الأعمدة -->
+        </div>
+
+        <!-- How To Order Info Section -->
+        <section id="how-to-order" class="bg-velo-card border border-velo-800/50 rounded-2xl p-6 md:p-8 space-y-6 mb-16 animate-pulse" style="animation-duration: 4s;">
+            <h4 class="text-xl font-bold text-white flex items-center gap-2.5">
+                <i class="fa-solid fa-gavel text-velo-500"></i>
+                كيف تعمل طريقة المزاد للسوني (ذكية وآمنة وبدون باند)؟
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-right">
+                <div class="space-y-2 bg-velo-dark/40 p-5 rounded-xl border border-velo-800/30">
+                    <div class="w-8 h-8 rounded-lg bg-velo-800 text-velo-500 font-bold flex items-center justify-center text-sm">١</div>
+                    <h5 class="text-sm font-bold text-white">تحديد السيارة الرخيصة</h5>
+                    <p class="text-xs text-gray-400 leading-relaxed">نحن نحدد لك سيارة معينة سعرها رخيص جداً في معرض اللعبة، ونطلب منك شرائها وتملكها لتفادي أي خسائر أو تكاليف عالية.</p>
+                </div>
+                <div class="space-y-2 bg-velo-dark/40 p-5 rounded-xl border border-velo-800/30">
+                    <div class="w-8 h-8 rounded-lg bg-velo-800 text-velo-500 font-bold flex items-center justify-center text-sm">٢</div>
+                    <h5 class="text-sm font-bold text-white">عرضها بأغلى سعر بالمزاد</h5>
+                    <p class="text-xs text-gray-400 leading-relaxed">تقوم بعرض هذه السيارة المحددة في المزاد (Auction House) داخل اللعبة وتضع "الحد الأقصى" للسعر المتفق عليه لشرائها.</p>
+                </div>
+                <div class="space-y-2 bg-velo-dark/40 p-5 rounded-xl border border-velo-800/30">
+                    <div class="w-8 h-8 rounded-lg bg-velo-800 text-velo-500 font-bold flex items-center justify-center text-sm">٣</div>
+                    <h5 class="text-sm font-bold text-white">نشتريها فوراً بملاييننا</h5>
+                    <p class="text-xs text-gray-400 leading-relaxed">ندخل المزاد، نبحث عن سيارتك بالاسم وحسابك ونشتريها فوراً بالسعر الغالي، ومبروك عليك الملايين آمنة وبدون تصفير.</p>
+                </div>
+            </div>
+
+            <!-- Important Notes Callout -->
+            <div class="bg-amber-500/10 border border-amber-500/30 p-5 rounded-xl space-y-2">
+                <span class="text-amber-500 text-xs font-bold flex items-center gap-1.5 uppercase">
+                    <i class="fa-solid fa-triangle-exclamation"></i> تنويهات هامة جداً قبل الطلب:
+                </span>
+                <ul class="text-xs text-gray-300 list-disc list-inside space-y-1 leading-relaxed">
+                    <li>تأكد من كتابة إيميل وكلمة مرور الحساب بشكل صحيح لتفادي أي تأخير في تنفيذ الخدمة (أصحاب البيسي والإكس بوكس فقط).</li>
+                    <li>لا تقم بفتح اللعبة نهائياً أثناء فترة العمل على حسابك حتى نبلغك بانتهاء العمل (للبيسي والاكسبوكس فقط).</li>
+                    <li>طريقة المزاد هي الحل الأقوى والآمن تماماً لمشتركي بلايستيشن (سوني) ومجربة على آلاف الحسابات بسلام تام.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Customer Reviews Section (Fully Dynamic reviews from Firestore cloud with active submit form) -->
+        <section id="reviews-section" class="mb-16">
+            <div class="text-center mb-10">
+                <h3 class="text-2xl font-black text-white flex items-center justify-center gap-2">
+                    <span class="w-2.5 h-6 bg-velo-600 rounded-full inline-block"></span>
+                    تقييمات وآراء زبائن Velo Store المميزين ⭐
+                </h3>
+                <p class="text-xs md:text-sm text-gray-400 mt-2">تقييمات حقيقية يتم سحبها من السحابة مباشرة لضمان أعلى مستويات المصداقية</p>
+            </div>
+            
+            <!-- Target Container for Dynamic Reviews -->
+            <div id="dynamic-reviews-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Injected dynamically. Empty state shown by default if no data exists -->
+            </div>
+
+            <!-- Review submission form -->
+            <div class="bg-velo-card border border-velo-800 p-6 rounded-2xl max-w-xl mx-auto space-y-4">
+                <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-velo-500"></i> شاركنا تقييمك وتجربتك الأسطورية!
+                </h4>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" id="review-user-name" placeholder="أدخل اسمك الكريم..." class="bg-velo-input border border-velo-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-velo-500">
+                    <div class="flex items-center justify-between sm:justify-end gap-2 bg-velo-input border border-velo-800 rounded-lg p-2.5">
+                        <span class="text-[10px] text-gray-400">تقييمك بالنجوم:</span>
+                        <div class="flex text-gray-500 gap-1 text-sm" id="star-rating-selector">
+                            <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 star-opt" onclick="setReviewRating(1)"></i>
+                            <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 star-opt" onclick="setReviewRating(2)"></i>
+                            <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 star-opt" onclick="setReviewRating(3)"></i>
+                            <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 star-opt" onclick="setReviewRating(4)"></i>
+                            <i class="fa-solid fa-star cursor-pointer hover:text-amber-400 star-opt font-bold text-amber-500" onclick="setReviewRating(5)"></i>
+                        </div>
+                    </div>
+                </div>
+                <textarea id="review-user-comment" rows="3" placeholder="اكتب رأيك وتجربتك بالتفصيل هنا..." class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-velo-500"></textarea>
+                
+                <button onclick="submitUserReview()" id="review-submit-btn" class="w-full bg-velo-800 hover:bg-velo-600 border border-velo-700 text-velo-100 font-bold py-2.5 rounded-xl text-xs transition-colors">
+                    إرسال التقييم السحابي مباشرة <i class="fa-solid fa-paper-plane mr-1"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- SHOPPING CART MODAL WITH INTEGRATED BANK TRANSFER INSTRUCTIONS -->
+    <div id="cart-modal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-velo-card border border-velo-800 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-velo-800 flex justify-between items-center bg-velo-dark">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shopping-basket text-velo-500 text-lg"></i>
+                    <h4 class="font-bold text-white">سلة المشتريات والتحويل</h4>
+                </div>
+                <button onclick="closeCartModal()" class="text-gray-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-6 flex-grow" id="modal-main-content">
+                <!-- Step Navigation for Checkout -->
+                <div class="flex items-center justify-center gap-3 border-b border-velo-800/60 pb-4">
+                    <span id="step-btn-1" class="text-xs font-bold px-3 py-1 bg-velo-600 text-white rounded-full">1. السلة والبيانات</span>
+                    <span class="text-gray-600 text-xs">→</span>
+                    <span id="step-btn-2" class="text-xs font-bold px-3 py-1 bg-velo-dark text-gray-400 rounded-full border border-velo-800">2. التحويل البنكي المباشر</span>
+                </div>
+
+                <!-- SCREEN 1: Cart Items & User Credentials Info -->
+                <div id="checkout-screen-1" class="space-y-6">
+                    <!-- Cart Items Container -->
+                    <div id="cart-items-list" class="space-y-3">
+                        <!-- Items injected by JS -->
+                    </div>
+
+                    <!-- Empty state container -->
+                    <div id="cart-empty-state" class="text-center py-8 space-y-3 hidden">
+                        <div class="text-velo-800 text-5xl">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <p class="text-gray-400 text-xs">سلة المشتريات فارغة تماماً، تفضل باختيار منتج أولاً!</p>
+                    </div>
+
+                    <!-- Account Credentials Form (Conditional Show) -->
+                    <div id="account-credentials-form" class="space-y-4 border-t border-velo-800/60 pt-4 hidden">
+                        <h5 class="text-xs font-bold text-velo-500 uppercase tracking-widest">معلومات الحساب والتواصل:</h5>
+                        
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block text-gray-400 mb-1">المنصة التي تلعب عليها الحساب:</label>
+                                <select id="user-platform" onchange="toggleCredentialsVisibility()" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                                    <option value="Xbox / PC App">تطبيق إكس بوكس / بيسي [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
+                                    <option value="Steam">منصة ستيم (Steam) [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
+                                </select>
+                            </div>
+
+                            <!-- Credentials fields only shown for non-PlayStation -->
+                            <div id="platform-creds-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
+                                <div>
+                                    <label class="block text-gray-400 mb-1">البريد الإلكتروني (الإيميل):</label>
+                                    <input type="email" id="user-email" placeholder="example@outlook.com" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 mb-1">كلمة المرور (الباسورد):</label>
+                                    <input type="password" id="user-password" placeholder="••••••••" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Sony Custom Info instructions -->
+                            <div id="sony-instruction-text" class="bg-velo-800/30 p-3 rounded-lg border border-velo-700/40 text-[11px] text-gray-300">
+                                📌 <strong class="text-white">تنويه المزاد:</strong> بما أنك اخترت منصة السوني، لن يتم طلب تسجيل دخول حسابك. بعد إتمام الدفع، ستتواصل معنا عبر واتساب لترسل لنا اسم سيارتك المعروضة لنشتريها منك مباشرة!
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-400 mb-1">رقم الواتساب الخاص بك لمتابعة التنفيذ:</label>
+                                <input type="tel" id="user-phone" placeholder="05xxxxxxxx" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCREEN 2: Secure Payment gateway simulated perfectly -->
+                <div id="checkout-screen-2" class="space-y-5 hidden">
+                    <div class="bg-velo-dark/80 p-4 rounded-xl border border-velo-800/60 text-center">
+                        <span class="text-xs text-gray-400 block mb-1">المبلغ المطلوب سداده:</span>
+                        <span id="payment-screen-total" class="text-2xl font-black text-velo-500">0 ريال</span>
+                    </div>
+
+                    <!-- Bank Account Info Card -->
+                    <div class="bg-velo-input border border-velo-800/80 rounded-xl p-4 text-xs space-y-3.5 relative">
+                        <div class="flex justify-between items-center border-b border-velo-800/60 pb-2">
+                            <span class="font-bold text-velo-500 text-[11px]">حساب التحويل البنكي (المصرفي)</span>
+                            <span class="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">نشط ومتوفر</span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">اسم المستفيد:</span>
+                                <span class="font-bold text-white">نواف عادل بن حامد الشامي</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">رقم الحساب:</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-white font-mono">077040010006084740215</span>
+                                    <button onclick="copyToClipboard('077040010006084740215')" class="text-velo-500 hover:text-velo-100 p-1"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">رقم الآيبان (IBAN):</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-white font-mono text-[10px]">SA5780000859608014740215</span>
+                                    <button onclick="copyToClipboard('SA5780000859608014740215')" class="text-velo-500 hover:text-velo-100 p-1"><i class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">كود سويفت:</span>
+                                <span class="font-bold text-white font-mono uppercase">RJHISARI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Upload Input -->
+                    <div class="space-y-2 text-xs">
+                        <label class="block text-gray-400 font-bold">اسم المحوّل (صاحب الحساب البنكي):</label>
+                        <input type="text" id="sender-bank-name" placeholder="ادخل اسمك بالكامل هنا للتحقق" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <label class="block text-gray-400 font-bold">إرفاق إيصال التحويل (صورة):</label>
+                        <div class="border-2 border-dashed border-velo-800 rounded-xl p-4 text-center bg-velo-dark/30 hover:border-velo-500 transition-colors relative">
+                            <input type="file" id="sender-receipt-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleReceiptFileSelect()">
+                            <div class="space-y-1" id="file-upload-placeholder">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-velo-500"></i>
+                                <span class="block text-[11px] text-gray-400" id="file-name-text">اضغط هنا لرفع صورة إيصال التحويل</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="executeMockPayment()" class="w-full bg-velo-600 hover:bg-velo-500 text-white font-black py-3 rounded-xl text-xs transition-colors shadow-lg shadow-velo-600/30 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-circle-check text-sm"></i>
+                        تم التحويل البنكي وتأكيد الطلب
+                    </button>
+                </div>
+
+                <!-- SCREEN 3: Payment Success / Processing -->
+                <div id="checkout-screen-3" class="py-8 text-center space-y-4 hidden">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 text-3xl animate-bounce">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h5 class="text-lg font-black text-white">تم استلام طلبك وبانتظار المراجعة!</h5>
+                    <!-- Order ID Display -->
+                    <div class="bg-velo-dark border border-velo-700 rounded-xl p-4 mx-auto max-w-xs">
+                        <span class="text-[10px] text-gray-400 block mb-1">رقم طلبك المرجعي:</span>
+                        <div class="flex items-center justify-center gap-2">
+                            <span id="customer-order-id" class="text-lg font-black text-velo-500 font-mono tracking-widest">—</span>
+                            <button onclick="copyToClipboard(document.getElementById('customer-order-id').innerText)" class="text-velo-500 hover:text-white p-1 text-sm"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                        <span class="text-[9px] text-gray-500 block mt-1">احتفظ بهذا الرقم لمتابعة طلبك</span>
+                    </div>
+                    <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
+                        لقد تم تسجيل الطلب في السجلات بنجاح. سيتم توجيهك الآن إلى الدعم الفني عبر واتساب لإرسال الإيصال المباشر والبدء في تعبئة حسابك فوراً!
+                    </p>
+                    <button onclick="forwardToWhatsapp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl text-xs transition-colors inline-flex items-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> الانتقال إلى واتساب لتأكيد الدفع والتنفيذ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Shown only in Screen 1 & Screen 2) -->
+            <div id="modal-footer-section" class="p-4 border-t border-velo-800 bg-velo-dark/60 flex flex-col gap-3">
+                <div id="footer-price-row" class="flex justify-between items-center">
+                    <span class="text-xs text-gray-400">إجمالي الطلب:</span>
+                    <span id="cart-total-price" class="text-lg font-black text-white font-mono">0 ريال</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3" id="footer-buttons-row">
+                    <button onclick="closeCartModal()" class="bg-velo-input border border-velo-800 hover:bg-velo-800/40 text-gray-300 font-bold py-2.5 rounded-lg text-xs transition-colors">
+                        متابعة التسوق
+                    </button>
+                    <!-- Navigates from Screen 1 to Screen 2 -->
+                    <button onclick="goToPaymentScreen()" id="next-to-payment-btn" class="bg-velo-600 hover:bg-velo-500 text-white font-bold py-2.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-velo-600/20">
+                        الذهاب للتحويل البنكي <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN & CONTROL MODAL (Dashboard) -->
+    <div id="admin-modal" class="fixed inset-0 z-[120] bg-black/90 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-velo-card border border-velo-800 rounded-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="p-4 border-b border-velo-800 flex justify-between items-center bg-velo-dark">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-toolbox text-velo-500 text-lg"></i>
+                    <h4 class="font-bold text-white">لوحة تحكم مبيعات وطلبات Velo</h4>
+                </div>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Dashboard Content Container -->
+            <div class="p-6 overflow-y-auto space-y-6 flex-grow" id="admin-panel-content">
+                <!-- Login Screen (Default view) -->
+                <div id="admin-login-screen" class="max-w-md mx-auto py-12 space-y-4">
+                    <div class="text-center space-y-1">
+                        <i class="fa-solid fa-lock text-3xl text-velo-500"></i>
+                        <h5 class="text-base font-bold text-white">يتطلب إذن دخول المسؤول</h5>
+                        <p class="text-xs text-gray-400">يرجى إدخال الرقم السري الخاص بالإدارة لعرض قائمة المبيعات</p>
+                    </div>
+                    <div class="space-y-3 text-xs">
+                        <input type="password" id="admin-passcode" placeholder="ادخل كلمة مرور الإدارة" class="w-full bg-velo-input border border-velo-800 rounded-lg p-3 text-white focus:border-velo-500 focus:outline-none text-center text-sm font-mono">
+                        <button onclick="verifyAdminLogin()" class="w-full bg-velo-600 hover:bg-velo-500 text-white font-bold py-3 rounded-lg text-xs transition-colors uppercase tracking-wider">
+                            تسجيل الدخول ومراقبة المبيعات
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard View (Hidden until Auth) -->
+                <div id="admin-dashboard-view" class="hidden space-y-6">
+                    <!-- Admin Tabs -->
+                    <div class="flex gap-2 border-b border-velo-800 pb-3">
+                        <button onclick="switchAdminTab('orders')" id="tab-orders" class="text-xs font-bold px-4 py-2 bg-velo-600 text-white rounded-lg transition-colors">📦 الطلبات والمبيعات</button>
+                        <button onclick="switchAdminTab('reviews')" id="tab-reviews" class="text-xs font-bold px-4 py-2 bg-velo-dark text-gray-400 rounded-lg border border-velo-800 hover:bg-velo-800 transition-colors">⭐ إدارة التقييمات</button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="orders-tab-content">
+                        <div class="bg-velo-dark p-4 rounded-xl border border-velo-800/80">
+                            <span class="text-xs text-gray-400">إجمالي المبيعات والأرباح</span>
+                            <span id="admin-total-profits" class="text-2xl font-black text-emerald-500 block mt-1">0 ريال</span>
+                        </div>
+                        <div class="bg-velo-dark p-4 rounded-xl border border-velo-800/80">
+                            <span class="text-xs text-gray-400">عدد الطلبات الناجحة</span>
+                            <span id="admin-total-orders" class="text-2xl font-black text-white block mt-1">0 طلب</span>
+                        </div>
+                        <div class="bg-velo-dark p-4 rounded-xl border border-velo-800/80">
+                            <span class="text-xs text-gray-400">حالات الانتظار والتحقق</span>
+                            <span id="admin-pending-orders" class="text-2xl font-black text-amber-500 block mt-1">0 طلب قيد المراجعة</span>
+                        </div>
+                    </div>
+
+                    <!-- Orders Table Section -->
+                    <div class="space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-velo-input p-4 rounded-xl border border-velo-800/60">
+                            <h5 class="text-sm font-bold text-white">تفاصيل ومتابعة الطلبات السحابية</h5>
+                            
+                            <!-- New Live Search Box -->
+                            <div class="relative max-w-xs w-full">
+                                <input type="text" id="admin-search-input" onkeyup="filterAdminOrdersTable()" placeholder="ابحث برقم الطلب أو الجوال..." class="w-full bg-velo-dark border border-velo-800 rounded-lg py-2 pl-3 pr-10 text-xs text-white focus:border-velo-500 focus:outline-none">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                            </div>
+
+                            <button onclick="loadOrders()" class="bg-velo-800 hover:bg-velo-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-velo-700/50 flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-arrows-rotate animate-spin" style="animation-duration: 10s;"></i> تحديث القائمة
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto rounded-xl border border-velo-800/80 bg-velo-dark">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-velo-card text-gray-400 border-b border-velo-800">
+                                    <tr>
+                                        <th class="p-3">رقم الطلب / العميل</th>
+                                        <th class="p-3">المنصة</th>
+                                        <th class="p-3">المنتجات</th>
+                                        <th class="p-3">المجموع</th>
+                                        <th class="p-3">اسم المحول</th>
+                                        <th class="p-3">الحالة</th>
+                                        <th class="p-3 text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-orders-tbody" class="divide-y divide-velo-800/40 text-gray-300">
+                                    <!-- Dynamic rows from Firestore -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    </div><!-- end orders-tab-content -->
+
+                    <!-- Reviews Tab Content -->
+                    <div id="reviews-tab-content" class="hidden space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h5 class="text-sm font-bold text-white">تقييمات العملاء</h5>
+                            <button onclick="loadAdminReviews()" class="bg-velo-800 hover:bg-velo-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-velo-700/50 flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrows-rotate"></i> تحديث
+                            </button>
+                        </div>
+                        <div id="admin-reviews-list" class="space-y-3">
+                            <p class="text-center text-gray-400 text-xs py-6">جاري تحميل التقييمات...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION POPUP (No Native Alerts) -->
+    <div id="toast-notification" class="fixed bottom-5 left-5 bg-velo-card border border-velo-600 text-white p-4 rounded-xl shadow-2xl z-[150] transition-all duration-300 transform translate-y-20 opacity-0 max-w-sm flex items-center gap-3">
+        <div id="toast-icon-wrapper" class="w-8 h-8 rounded-full flex items-center justify-center text-sm">
+            <!-- Icon dynamically inserted -->
+        </div>
+        <div>
+            <h5 id="toast-title" class="text-xs font-bold">تنبيه</h5>
+            <p id="toast-message" class="text-[10px] text-gray-300 mt-0.5">رسالة الإشعار</p>
+        </div>
+    </div>
+
+    <!-- TERMS & CONDITIONS SECTION -->
+    <section class="max-w-7xl mx-auto px-4 pb-4">
+        <details class="bg-velo-card border border-velo-800/40 rounded-2xl overflow-hidden">
+            <summary class="p-4 cursor-pointer text-sm font-bold text-gray-300 hover:text-white flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-velo-500"></i>
+                الشروط والأحكام وسياسة الاسترجاع
+            </summary>
+            <div class="px-5 pb-5 text-xs text-gray-400 space-y-3 leading-relaxed border-t border-velo-800/40 pt-4">
+                <p><strong class="text-white">١. التسليم:</strong> يتم تنفيذ الطلبات بعد التحقق من التحويل البنكي والتواصل عبر واتساب. وقت التنفيذ يتراوح بين ساعة إلى 24 ساعة.</p>
+                <p><strong class="text-white">٢. سياسة الاسترجاع:</strong> لا يتم استرجاع المبالغ بعد تنفيذ الخدمة. في حال وجود مشكلة في التنفيذ يتم الإعادة أو التعويض.</p>
+                <p><strong class="text-white">٣. الأمان:</strong> لا نطلب بيانات حساب السوني نهائياً. بيانات البيسي والإكس بوكس تُستخدم للتنفيذ فقط ولا تُحفظ بعد الانتهاء.</p>
+                <p><strong class="text-white">٤. المسؤولية:</strong> متجر Velo غير مسؤول عن أي حظر ناتج عن استخدام العميل لأساليب غير آمنة خارج نطاق خدمتنا.</p>
+                <p><strong class="text-white">٥. التواصل:</strong> جميع الاستفسارات والمشاكل تُحل عبر واتساب على الرقم الرسمي للمتجر.</p>
+            </div>
+        </details>
+    </section>
+
+    <!-- ORDER TRACKING SECTION -->
+    <section class="max-w-7xl mx-auto px-4 pb-10">
+        <div class="bg-velo-card border border-velo-800/40 rounded-2xl p-6 max-w-lg mx-auto text-center space-y-4">
+            <div>
+                <i class="fa-solid fa-magnifying-glass text-velo-500 text-2xl mb-2 block"></i>
+                <h4 class="text-base font-bold text-white">تتبع طلبك</h4>
+                <p class="text-xs text-gray-400 mt-1">أدخل رقم طلبك للاستعلام عن حالته</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="track-order-input" placeholder="VLO-XXXXXX" class="flex-grow bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white text-xs focus:border-velo-500 focus:outline-none font-mono text-center uppercase">
+                <button onclick="trackOrder()" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-search"></i> تتبع
+                </button>
+            </div>
+            <div id="track-result" class="hidden bg-velo-dark rounded-xl p-4 border border-velo-800 text-right space-y-2"></div>
+        </div>
+    </section>
+
+    <!-- Footer Area -->
+    <footer class="border-t border-velo-800/40 bg-velo-dark py-8 px-4 text-center mt-12">
+        <div class="max-w-7xl mx-auto space-y-4">
+            <!-- Logo representation -->
+            <div class="flex items-center justify-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-velo-600 flex items-center justify-center text-white font-black text-sm">V</div>
+                <span class="font-extrabold text-white tracking-widest text-lg">VELO STORE</span>
+            </div>
+            
+            <p class="text-[10px] text-gray-500 max-w-md mx-auto leading-relaxed">
+                متجر Velo (VLO) لتقديم أفضل خدمات ومنتجات التمكيس وحزم الـ CR والويل سبن لألعاب Forza Horizon بآمان فائق ودعم مستمر على مدار الساعة.
+            </p>
+
+            <div class="text-[10px] text-gray-600">
+                &copy; 2026 جميع الحقوق محفوظة لمتجر Velo Store.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS Logic Block -->
+    <script>
+        // State variables
+        let selectedF6SonyOption = null;
+        let selectedF5SonyOption = null;
+        let cart = [];
+        let finalMessage = ""; // Stores message for final WhatsApp redirect
+        let receiptBase64 = ""; // Stores Base64 string of receipt
+        let ordersList = []; // Array of retrieved orders from DB
+        let userReviewRating = 5; // Global state for star selector
+
+        // Firebase Configurations (With active fallback to secure memory states)
+        let firebaseConfig = {
+            apiKey: "AIzaSyBPK6tBaGGnNNd-SftX6ACB8CIpo4HaKU",
+            authDomain: "velo-store-a8af9.firebaseapp.com",
+            projectId: "velo-store-a8af9",
+            storageBucket: "velo-store-a8af9.appspot.com",
+            messagingSenderId: "1027910499343",
+            appId: "1:1027910499343:web:8d5d4fe9b94749ca71377a",
+            measurementId: "G-2KVPZ4QYQZ"
+        };
+
+        // Override with sandbox variables if provided dynamically
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch (e) {
+                console.error("Error parsing Dynamic config:", e);
+            }
+        }
+
+        let db = null;
+        let auth = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'velo-store-a8af9';
+
+        // Helper to get structured Firestore path that complies strictly with Rule 1
+        function getOrdersCollection() {
+            if (!db) return null;
+            return db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders');
+        }
+
+        // Helper for reviews collection matching Rule 1
+        function getReviewsCollection() {
+            if (!db) return null;
+            return db.collection('artifacts').doc(appId).collection('public').doc('data').collection('reviews');
+        }
+
+        // Initialize Firebase safely inside the compat architecture
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth(app);
+            db = firebase.firestore(app);
+            
+            // Safe Auth Listener (Rule 3)
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("Firebase Authenticated successfully as ID:", user.uid);
+                    // Load dynamic reviews on successful auth
+                    loadDynamicReviews();
+                } else {
+                    // Fast anonymous authentication to fulfill DB rules
+                    const initAuth = async () => {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await auth.signInWithCustomToken(__initial_auth_token);
+                            } else {
+                                await auth.signInAnonymously();
+                            }
+                        } catch (err) {
+                            console.error("Auth initialization warning:", err);
+                        }
+                    };
+                    initAuth();
+                }
+            });
+        } catch (e) {
+            console.error("Firebase compat failed to initialize. Reverting to fallback session-memory storage.", e);
+        }
+
+        window.onload = function() {
+            updateCartUI();
+            renderProductsGrid();
+        }
+
+        // Real-time order notifications for admin (runs after admin login)
+        let adminOrderListener = null;
+        let knownOrderIds = new Set();
+
+        function startAdminOrderNotifications() {
+            if (adminOrderListener) return; // already listening
+            const ordersCollection = getOrdersCollection();
+            if (!ordersCollection) return;
+
+            // First load to populate known IDs
+            ordersCollection.get().then(snap => {
+                snap.forEach(doc => knownOrderIds.add(doc.id));
+
+                // Now listen for real-time changes
+                adminOrderListener = ordersCollection.onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added' && !knownOrderIds.has(change.doc.id)) {
+                            knownOrderIds.add(change.doc.id);
+                            const order = change.doc.data();
+                            // Play sound and show notification
+                            playNotificationSound();
+                            showNotification(
+                                '🔔 طلب جديد وصل!',
+                                `رقم الطلب: ${order.orderId} | المبلغ: ${order.totalPrice} ريال | ${order.clientPhone}`
+                            );
+                            // Reload orders table
+                            loadOrders();
+                        }
+                    });
+                });
+            }).catch(() => {});
+        }
+
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+                oscillator.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
+        }
+
+        // List of products offered
+        const productsData = [
+            {
+                id: 'f6_sony',
+                title: 'فلوس فورزا 6 سوني (طريقة المزاد المضمونة)',
+                desc: 'رصيد ملايين فوري ومضمون دون الحاجة لتسليم بيانات حسابك! تعرض سيارتك بالمزاد بسعر غالي في اللعبة ونحن نشتريها منك فوراً لضمان آمان حسابك 100%.',
+                platform: 'Sony PlayStation',
+                badge: 'FORZA HORIZON 6',
+                icon: 'fa-brands fa-playstation',
+                type: 'sony_f6',
+                features: [
+                    'آمن 100%: لا نطلب تسجيل دخول حسابك على الإطلاق.',
+                    'تشتري أي سيارة تبيها وتعدلها على ذوقك في المزاد.',
+                    'تنفيذ وشراء المزاد في الموعد المحدد مباشرة.'
+                ],
+                options: [
+                    { name: '200 Million CR', price: 50, value: '200m' },
+                    { name: '500 Million CR', price: 70, value: '500m' }
+                ]
+            },
+            {
+                id: 'f5_sony',
+                title: 'فلوس فورزا 5 سوني (طريقة المزاد المضمونة)',
+                desc: 'العرض الأفضل للاعبي السوني في فورزا 5! تم تعديل وتخفيض السعر ليكون (25 ريال فقط لكل 200 مليون)، تسليم فوري عبر طريقة المزاد وبآمان تام.',
+                platform: 'Sony PlayStation',
+                badge: 'FORZA HORIZON 5',
+                icon: 'fa-brands fa-playstation',
+                type: 'sony_f5',
+                features: [
+                    'سعر مميز جداً: 200 مليون بـ 25 ريال فقط.',
+                    'لا نطلب دخول الحساب نهائياً، طريقة المزاد فقط.',
+                    'آمن بنسبة 100% ولا يوجد أي احتمالية للباند.'
+                ],
+                options: [
+                    { name: '200 Million CR', price: 25, value: '200m' },
+                    { name: '500 Million CR', price: 62.5, value: '500m' }
+                ]
+            },
+            {
+                id: 'f6_pc_xbox',
+                title: 'تمكيس شامل فورزا 6 [PC & XBOX فقط]',
+                desc: 'الخدمة الأقوى والأشمل للعبة فورزا 6 على منصتي البيسي والإكس بوكس. تشمل تعديل الحساب بالكامل وبأقصى حدود المزايا لتستمتع باللعبة كلياً.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 6',
+                icon: 'fa-solid fa-desktop',
+                type: 'generic',
+                price: 110,
+                details: 'باقة التمكيس الشامل لـ FH6',
+                features: [
+                    'فلوس $999M CR$',
+                    'سوبر ويل سبن $999M$',
+                    'جميع سيارات اللعبة متوفرة ومفتوحة بالكامل',
+                    'آمن ومضمون 100% وبدون باند'
+                ]
+            },
+            {
+                id: 'f5_pc_xbox',
+                title: 'تمكيس الفلوس والويل سبنز فورزا 5 [PC & XBOX فقط]',
+                desc: 'باقة ممتازة مخصصة للبيسي والإكس بوكس في فورزا 5 لتزويد حسابك بكمية هائلة وغير محدودة من رصيد الكاش واللفات لتسهيل تقدّمك في اللعبة.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 5',
+                icon: 'fa-solid fa-desktop',
+                type: 'generic',
+                price: 40,
+                details: 'باقة تمكيس الفلوس والويل سبنز لـ FH5',
+                features: [
+                    'فلوس $999,999,999$ CR',
+                    'دوران ويل سبن $999,999,999$ Spins',
+                    'ليفل إكس بي مرتفع جداً للحساب',
+                    'خدمة سريعة وآمنة 100%'
+                ]
+            }
+        ];
+
+        function renderProductsGrid() {
+            const container = document.getElementById('products-grid');
+            if (!container) return;
+            container.innerHTML = productsData.map(p => {
+                if (p.type === 'sony_f6' || p.type === 'sony_f5') {
+                    return `
+                    <div class="bg-velo-card rounded-2xl border border-velo-800/50 overflow-hidden flex flex-col justify-between hover:border-velo-600/50 transition-colors">
+                        <div class="p-6 space-y-5">
+                            <div class="flex justify-between items-start">
+                                <span class="bg-velo-800 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase">${p.badge}</span>
+                                <div class="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                    <i class="${p.icon}"></i> ${p.platform}
+                                </div>
+                            </div>
+                            <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">${p.desc}</p>
+                            <ul class="text-xs space-y-2 text-gray-300 bg-velo-dark/50 p-3.5 rounded-xl border border-velo-800/30">
+                                ${p.features.map(f => `<li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> ${f}</li>`).join('')}
+                            </ul>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400">اختر كمية الفلوس المطلوبة:</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    ${p.options.map(o => `
+                                        <button type="button" onclick="selectSonyOption('${p.type}', '${o.value}', ${o.price})" id="${p.type}-${o.value}" class="${p.type}-opt py-3 px-4 rounded-xl border border-velo-800 bg-velo-dark/30 hover:border-velo-500 text-center font-bold text-sm transition-all text-white flex flex-col items-center gap-1">
+                                            <span>${o.name}</span>
+                                            <span class="text-velo-500 text-xs">${o.price} ريال</span>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-velo-dark/40 border-t border-velo-800/30 flex justify-between items-center gap-4">
+                            <div>
+                                <span class="text-[10px] text-gray-400 block">السعر الإجمالي:</span>
+                                <span id="price-${p.type}" class="text-xl font-extrabold text-white">اختر العرض</span>
+                            </div>
+                            <button onclick="addSonyToCart('${p.type}')" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-cart-plus"></i> إضافة للسلة
+                            </button>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="bg-velo-card rounded-2xl border border-velo-800/50 overflow-hidden flex flex-col justify-between hover:border-velo-600/50 transition-colors">
+                        <div class="p-6 space-y-5">
+                            <div class="flex justify-between items-start">
+                                <span class="bg-velo-800 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase">${p.badge}</span>
+                                <div class="bg-zinc-700 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                    <i class="${p.icon}"></i> ${p.platform}
+                                </div>
+                            </div>
+                            <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">${p.desc}</p>
+                            <div class="space-y-3 bg-velo-dark/50 p-4 rounded-xl border border-velo-800/30">
+                                <span class="text-[11px] font-bold text-velo-500 block uppercase tracking-wide">مميزات التمكيس الشامل:</span>
+                                <div class="grid grid-cols-2 gap-2 text-[11px] text-gray-300">
+                                    ${p.features.map(f => `<div class="flex items-center gap-2"><i class="fa-solid fa-star text-yellow-500"></i> ${f}</div>`).join('')}
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="p-6 bg-velo-dark/40 border-t border-velo-800/30 flex justify-between items-center gap-4">
+                            <div>
+                                <span class="text-[10px] text-gray-400 block">سعر التمكيس الشامل:</span>
+                                <span class="text-2xl font-black text-white">${p.price} ريال</span>
+                            </div>
+                            <button onclick="addGenericToCart('${p.title}', ${p.price}, '${p.platform}')" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-cart-plus"></i> إضافة للسلة
+                            </button>
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        function selectSonyOption(type, option, price) {
+            document.querySelectorAll(`.${type}-opt`).forEach(el => {
+                el.classList.remove('neon-border', 'bg-velo-800/40');
+            });
+
+            const targetEl = document.getElementById(`${type}-${option}`);
+            if (targetEl) {
+                targetEl.classList.add('neon-border', 'bg-velo-800/40');
+            }
+
+            const chosen = {
+                title: type === 'sony_f6' ? `فلوس فورزا 6 سوني (${option === '200m' ? '200' : '500'} مليون بالمزاد)` : `فلوس فورزا 5 سوني (${option === '200m' ? '200' : '500'} مليون بالمزاد)`,
+                price: price,
+                details: option === '200m' ? '200 Million CR' : '500 Million CR',
+                platform: 'Sony PlayStation'
+            };
+
+            if (type === 'sony_f6') selectedF6SonyOption = chosen;
+            else selectedF5SonyOption = chosen;
+
+            document.getElementById(`price-${type}`).innerText = `${price} ريال`;
+        }
+
+        function addSonyToCart(type) {
+            const option = type === 'sony_f6' ? selectedF6SonyOption : selectedF5SonyOption;
+            if (!option) {
+                showNotification('عذراً!', 'يرجى اختيار العرض والكمية المطلوبة أولاً!', false);
+                return;
+            }
+
+            cart.push({
+                id: Date.now(),
+                title: option.title,
+                price: option.price,
+                details: option.details,
+                platform: 'سوني (طريقة المزاد)'
+            });
+
+            showNotification('تم الإضافة!', 'تمت إضافة المنتج بنجاح إلى سلة مشترياتك.');
+            updateCartUI();
+        }
+
+        function addGenericToCart(title, price, platform) {
+            cart.push({
+                id: Date.now(),
+                title: title,
+                price: price,
+                details: 'باقة تمكيس شاملة',
+                platform: platform
+            });
+
+            showNotification('تم الإضافة!', `تمت إضافة ${title} بنجاح إلى السلة.`);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const countEl = document.getElementById('cart-count');
+            const itemsListEl = document.getElementById('cart-items-list');
+            const emptyStateEl = document.getElementById('cart-empty-state');
+            const credentialsForm = document.getElementById('account-credentials-form');
+            const totalPriceEl = document.querySelectorAll('#cart-total-price');
+
+            if (countEl) {
+                countEl.innerText = Math.max(0, cart.length);
+                countEl.classList.toggle('hidden', cart.length === 0);
+            }
+
+            if (cart.length > 0) {
+                if (emptyStateEl) emptyStateEl.classList.add('hidden');
+                if (credentialsForm) credentialsForm.classList.remove('hidden');
+            } else {
+                if (emptyStateEl) emptyStateEl.classList.remove('hidden');
+                if (credentialsForm) credentialsForm.classList.add('hidden');
+            }
+
+            if (itemsListEl) {
+                itemsListEl.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between p-3.5 bg-velo-dark/80 border border-velo-800 rounded-xl">
+                        <div class="space-y-1 text-right">
+                            <h6 class="text-xs font-bold text-white">${item.title}</h6>
+                            <span class="text-[10px] text-velo-500 block">${item.platform} • ${item.details || ''}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-extrabold text-white">${item.price} ريال</span>
+                            <button onclick="removeItem(${item.id})" class="text-red-500 hover:text-red-400 p-1 text-sm">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            let total = 0; cart.forEach(i => total += i.price);
+            totalPriceEl.forEach(el => el.innerText = `${total} ريال`);
+            
+            toggleCredentialsVisibility();
+        }
+
+        function removeItem(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+            showNotification('تم الحذف', 'تم حذف المنتج من سلة المشتريات.');
+        }
+
+        function toggleCredentialsVisibility() {
+            const platform = document.getElementById('user-platform') ? document.getElementById('user-platform').value : '';
+            const credsContainer = document.getElementById('platform-creds-container');
+            const sonyInstruction = document.getElementById('sony-instruction-text');
+
+            if (!credsContainer || !sonyInstruction) return;
+
+            if (platform === 'PlayStation') {
+                credsContainer.classList.add('hidden');
+                sonyInstruction.classList.remove('hidden');
+            } else {
+                credsContainer.classList.remove('hidden');
+                sonyInstruction.classList.add('hidden');
+            }
+        }
+
+        function copyToClipboard(text) {
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            showNotification('تم النسخ!', 'تم نسخ النص المطلوب للذاكرة بنجاح.');
+        }
+
+        function goToPaymentScreen() {
+            if (cart.length === 0) {
+                showNotification('تنبيه!', 'سلة مشترياتك فارغة حالياً!', false);
+                return;
+            }
+
+            const phone = document.getElementById('user-phone').value.trim();
+            const platform = document.getElementById('user-platform').value;
+
+            if (!phone) {
+                showNotification('معلومات ناقصة!', 'يرجى إدخال رقم الواتساب الخاص بك أولاً!', false);
+                return;
+            }
+
+            if (platform !== 'PlayStation') {
+                const email = document.getElementById('user-email').value.trim();
+                const password = document.getElementById('user-password').value.trim();
+                if (!email || !password) {
+                    showNotification('معلومات ناقصة!', 'يرجى تعبئة كامل بيانات الحساب للتسليم بنجاح.', false);
+                    return;
+                }
+            }
+
+            let totalSum = 0;
+            cart.forEach(item => totalSum += item.price);
+
+            document.getElementById('checkout-screen-1').classList.add('hidden');
+            document.getElementById('checkout-screen-2').classList.remove('hidden');
+
+            document.getElementById('step-btn-1').className = 'text-xs font-bold px-3 py-1 bg-velo-dark text-gray-400 rounded-full border border-velo-800';
+            document.getElementById('step-btn-2').className = 'text-xs font-bold px-3 py-1 bg-velo-600 text-white rounded-full';
+
+            document.getElementById('payment-screen-total').innerText = `${totalSum} ريال`;
+        }
+
+        function handleReceiptFileSelect() {
+            const fileInput = document.getElementById('sender-receipt-file');
+            const fileNameText = document.getElementById('file-name-text');
+            
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                fileNameText.innerText = `تم اختيار: ${file.name}`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    receiptBase64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function executeMockPayment() {
+            const senderName = document.getElementById('sender-bank-name').value.trim();
+            
+            if (!senderName) {
+                showNotification('بيانات مطلوبة!', 'يرجى إدخال اسم المحوّل ثلاثياً لمطابقة الحساب البنكي!', false);
+                return;
+            }
+
+            const phone = document.getElementById('user-phone').value.trim();
+            const platform = document.getElementById('user-platform').value;
+            const email = document.getElementById('user-email') ? document.getElementById('user-email').value.trim() : "";
+            const password = document.getElementById('user-password') ? document.getElementById('user-password').value.trim() : "";
+
+            let totalSum = 0;
+            let productsText = "";
+            cart.forEach((item, index) => {
+                productsText += `${index + 1}. ${item.title} (${item.price} ريال) \n`;
+                totalSum += item.price;
+            });
+
+            const orderId = 'VLO-' + Math.floor(100000 + Math.random() * 900000);
+
+            const orderPayload = {
+                orderId: orderId,
+                clientPhone: phone,
+                platform: platform,
+                email: email || "طريقة المزاد (لا يوجد إيميل)",
+                password: password || "طريقة المزاد (لا يوجد باسورد)",
+                senderName: senderName,
+                totalPrice: totalSum,
+                products: productsText,
+                receiptImage: receiptBase64 || "",
+                status: "بانتظار التحقق ⏳",
+                timestamp: new Date().toISOString()
+            };
+
+            const ordersCollection = getOrdersCollection();
+            if (ordersCollection) {
+                ordersCollection.doc(orderId).set(orderPayload)
+                .then(() => {
+                    console.log("Order saved successfully to cloud Firestore!");
+                })
+                .catch(err => {
+                    console.error("Error saving to Firestore: ", err);
+                    showNotification('خطأ في الإرسال', 'فشل حفظ الطلب في قاعدة البيانات سحابياً.', false);
+                });
+            } else {
+                ordersList.push(orderPayload);
+            }
+
+            let message = `*طلب جديد قيد الانتظار من متجر Velo (VLO)* ⚡\n`;
+            message += `------------------------------------\n`;
+            message += `*رقم الفاتورة المميز:* ${orderId}\n`;
+            message += `------------------------------------\n`;
+            message += `*المنتجات المطلوبة:*\n${productsText}`;
+            message += `\n*حالة التحويل البنكي:* تم التحويل بنجاح ✅\n`;
+            message += `*اسم المحوّل:* ${senderName}\n`;
+            message += `*الإجمالي المصدق:* ${totalSum} ريال لصالـح نواف عادل\n`;
+            message += `------------------------------------\n`;
+            message += `*بيانات الحساب والمنصة:*\n`;
+            message += `- المنصة المحددة: ${platform}\n`;
+            
+            if (platform !== 'PlayStation') {
+                message += `- البريد الإلكتروني: ${email}\n`;
+                message += `- كلمة المرور: ${password}\n`;
+            } else {
+                message += `- طريقة التسليم: المزاد (بانتظار تواصل العميل لإرسال سيارته) 🚗\n`;
+            }
+            message += `- رقم تواصل العميل: ${phone}\n`;
+            message += `------------------------------------\n`;
+            
+            if (receiptBase64) {
+                message += `*📸 تم إرفاق صورة إيصال التحويل بنجاح!*\n`;
+                message += `⚠️ (فضلاً قم بإرسال صورة الإيصال كملف في هذه المحادثة أيضاً للتأكيد السريع والتحقق البصري).\n`;
+            } else {
+                message += `⚠️ (الرجاء إرفاق صورة إيصال التحويل البنكي الآن في هذه المحادثة للتحقق).\n`;
+            }
+            message += `\nالرجاء التحقق من الحساب البنكي وتنفيذ الخدمة فوراً!`;
+
+            finalMessage = message;
+
+            // Show order ID to customer
+            const customerOrderIdEl = document.getElementById('customer-order-id');
+            if (customerOrderIdEl) customerOrderIdEl.innerText = orderId;
+
+            document.getElementById('checkout-screen-2').classList.add('hidden');
+            document.getElementById('checkout-screen-3').classList.remove('hidden');
+        }
+
+        function forwardToWhatsapp() {
+            window.open(`https://wa.me/966507642128?text=${encodeURIComponent(finalMessage)}`, '_blank');
+            cart = [];
+            updateCartUI();
+            closeCartModal();
+            location.reload();
+        }
+
+        // Admin Logic
+        // Simple hash function for password obfuscation
+        async function hashString(str) {
+            const msgBuffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyAdminLogin() {
+            const passcode = document.getElementById('admin-passcode').value;
+            const hashed = await hashString(passcode);
+            // SHA-256 of Aa@0536075882
+            const correctHash = 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1';
+            if (hashed === correctHash) {
+                document.getElementById('admin-login-screen').classList.add('hidden');
+                document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                // إذا Firebase غير مستعد، ننتظر المصادقة أو نتحقق مباشرة
+                if (auth && auth.currentUser) {
+                    loadOrders();
+                    loadAdminReviews();
+                    startAdminOrderNotifications();
+                } else if (db) {
+                    // انتظر المصادقة لمدة 5 ثواني ثم حمّل
+                    const adminLoadInterval = setInterval(() => {
+                        if (auth && auth.currentUser) {
+                            clearInterval(adminLoadInterval);
+                            loadOrders();
+                            loadAdminReviews();
+                        }
+                    }, 500);
+                    // إذا ما اشتغل Firebase خلال 5 ثواني، أعد المحاولة بمصادقة مجهولة
+                    setTimeout(() => {
+                        clearInterval(adminLoadInterval);
+                        if (!auth || !auth.currentUser) {
+                            auth.signInAnonymously().then(() => {
+                                loadOrders();
+                                loadAdminReviews();
+                                startAdminOrderNotifications();
+                            }).catch(() => {
+                                loadOrders();
+                                loadAdminReviews();
+                            });
+                        }
+                    }, 5000);
+                } else {
+                    loadOrders();
+                    loadAdminReviews();
+                }
+            } else {
+                showNotification('خطأ في الرمز السري!', 'الرمز السري لمدير الموقع غير صحيح، يرجى إعادة المحاولة.', false);
+            }
+        }
+
+        // Delete order from database
+        function deleteOrder(orderId) {
+            const ordersCollection = getOrdersCollection();
+            if (db && ordersCollection) {
+                ordersCollection.doc(orderId).delete().then(() => {
+                    showNotification('تم الحذف', 'تم حذف سجل الفاتورة والطلب بنجاح.');
+                    loadOrders();
+                }).catch(err => {
+                    console.error("Error deleting order: ", err);
+                    showNotification('خطأ!', 'فشل حذف الطلب من السحابة.', false);
+                });
+            } else {
+                ordersList = ordersList.filter(o => o.orderId !== orderId);
+                renderAdminOrdersTable(ordersList);
+                showNotification('تم الحذف', 'تم حذف سجل الفاتورة بنجاح.');
+            }
+        }
+
+        function loadOrders() {
+            const tbody = document.getElementById('admin-orders-tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">جاري تحميل سجلات الطلبات السحابية...</td></tr>`;
+            }
+
+            const doLoad = () => {
+                const ordersCollection = getOrdersCollection();
+                if (ordersCollection) {
+                    ordersCollection.get().then((querySnapshot) => {
+                        ordersList = [];
+                        querySnapshot.forEach((doc) => { ordersList.push(doc.data()); });
+                        renderAdminOrdersTable(ordersList);
+                    }).catch(err => {
+                        console.error("Error getting documents: ", err);
+                        if (tbody) {
+                            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">خطأ في تحميل البيانات: ${err.message}</td></tr>`;
+                        }
+                    });
+                } else {
+                    renderAdminOrdersTable(ordersList);
+                }
+            };
+
+            if (auth && auth.currentUser) {
+                doLoad();
+            } else if (auth) {
+                auth.signInAnonymously().then(doLoad).catch(doLoad);
+            } else {
+                doLoad();
+            }
+        }
+
+        function renderAdminOrdersTable(data) {
+            const tbody = document.getElementById('admin-orders-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            let totalProfits = 0;
+            let successCount = 0;
+            let pendingCount = 0;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">لا يوجد مبيعات أو طلبات مسجلة بعد!</td></tr>`;
+                updateDashboardStats(0, 0, 0);
+                return;
+            }
+
+            data.forEach(order => {
+                if (order.status.includes('تم التنفيذ')) {
+                    totalProfits += Number(order.totalPrice);
+                    successCount++;
+                } else {
+                    pendingCount++;
+                }
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-velo-800/40 hover:bg-velo-800/20 admin-order-row';
+                row.setAttribute('data-id', order.orderId.toLowerCase());
+                row.setAttribute('data-phone', order.clientPhone);
+                
+                const receiptButtonHTML = order.receiptImage 
+                    ? `<button onclick="viewReceiptImage('${order.orderId}')" class="text-velo-500 hover:underline"><i class="fa-regular fa-image"></i> عرض الإيصال</button>`
+                    : `<span class="text-gray-600">بدون إيصال</span>`;
+
+                row.innerHTML = `
+                    <td class="p-3">
+                        <span class="font-bold text-white block font-mono text-[11px]">${order.orderId}</span>
+                        <span class="text-[9px] text-gray-400 block">${order.clientPhone}</span>
+                    </td>
+                    <td class="p-3 font-semibold text-xs">${order.platform}</td>
+                    <td class="p-3 text-[10px] max-w-[150px] truncate" title="${order.products}">${order.products.replace(/\n/g, ' • ')}</td>
+                    <td class="p-3 font-black text-white font-mono text-xs">${order.totalPrice} ريال</td>
+                    <td class="p-3 text-[11px]">${order.senderName}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status.includes('تم التنفيذ') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center space-x-1 flex items-center justify-center gap-2">
+                        ${receiptButtonHTML}
+                        <select onchange="changeOrderStatus('${order.orderId}', this.value)" class="bg-velo-dark border border-velo-700 text-white text-[10px] rounded px-1 py-1 cursor-pointer">
+                            <option value="">تغيير الحالة...</option>
+                            <option value="تم التنفيذ والتسليم ✅">تم التسليم ✅</option>
+                            <option value="قيد التنفيذ 🔄">قيد التنفيذ 🔄</option>
+                            <option value="بانتظار التحقق ⏳">انتظار التحقق ⏳</option>
+                            <option value="مرفوض ❌">مرفوض ❌</option>
+                        </select>
+                        <button onclick="deleteOrder('${order.orderId}')" class="text-red-500 hover:text-red-400 p-1 text-[11px]"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            updateDashboardStats(totalProfits, successCount + pendingCount, pendingCount);
+        }
+
+        function filterAdminOrdersTable() {
+            const q = document.getElementById('admin-search-input').value.toLowerCase();
+            document.querySelectorAll('.admin-order-row').forEach(row => {
+                const id = row.getAttribute('data-id');
+                const phone = row.getAttribute('data-phone');
+                row.style.display = (id.includes(q) || phone.includes(q)) ? '' : 'none';
+            });
+        }
+
+        // Update Admin Dashboard top stats blocks
+        function updateDashboardStats(profits, total, pending) {
+            const profitsEl = document.getElementById('admin-total-profits');
+            const totalOrdersEl = document.getElementById('admin-total-orders');
+            const pendingOrdersEl = document.getElementById('admin-pending-orders');
+            
+            if (profitsEl) profitsEl.innerText = `${profits} ريال`;
+            if (totalOrdersEl) totalOrdersEl.innerText = `${total} طلب`;
+            if (pendingOrdersEl) pendingOrdersEl.innerText = `${pending} طلب قيد المراجعة`;
+        }
+
+        function viewReceiptImage(orderId) {
+            const order = ordersList.find(o => o.orderId === orderId);
+            if (order && order.receiptImage) {
+                const newWindow = window.open();
+                newWindow.document.write(`<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0f0a1c;"><img src="${order.receiptImage}" style="max-width:90%;max-height:90%;border-radius:12px;box-shadow:0 0 20px rgba(0,0,0,0.5);" /></div>`);
+            }
+        }
+
+        function changeOrderStatus(orderId, newStatus) {
+            const orderIndex = ordersList.findIndex(o => o.orderId === orderId);
+            if (orderIndex !== -1) {
+                ordersList[orderIndex].status = newStatus;
+                
+                const ordersCollection = getOrdersCollection();
+                if (db && ordersCollection) {
+                    ordersCollection.doc(orderId).update({ status: newStatus })
+                    .then(() => {
+                        showNotification('نجاح!', `تم تغيير حالة طلب العميل ${orderId} إلى تم التسليم!`);
+                        loadOrders();
+                    }).catch(err => {
+                        console.error("Error updating order status: ", err);
+                        showNotification('خطأ!', 'فشل تحديث حالة الطلب.', false);
+                    });
+                } else {
+                    renderAdminOrdersTable(ordersList);
+                }
+            }
+        }
+
+        function showNotification(title, message, isSuccess = true) {
+            const toast = document.getElementById('toast-notification');
+            const toastIconWrapper = document.getElementById('toast-icon-wrapper');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMsg = document.getElementById('toast-message');
+
+            if (isSuccess) {
+                toastIconWrapper.className = 'w-8 h-8 rounded-full flex items-center justify-center text-sm bg-emerald-500/20 text-emerald-500';
+                toastIconWrapper.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                toast.classList.replace('border-red-600', 'border-velo-600');
+            } else {
+                toastIconWrapper.className = 'w-8 h-8 rounded-full flex items-center justify-center text-sm bg-red-500/20 text-red-500';
+                toastIconWrapper.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+                toast.classList.add('border-red-600');
+            }
+
+            toastTitle.innerText = title;
+            toastMsg.innerText = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        function openAdminModal() { document.getElementById('admin-modal').classList.replace('hidden', 'flex'); }
+        function closeAdminModal() { document.getElementById('admin-modal').classList.replace('flex', 'hidden'); }
+        function openCartModal() { document.getElementById('cart-modal').classList.replace('hidden', 'flex'); }
+        function closeCartModal() { document.getElementById('cart-modal').classList.replace('flex', 'hidden'); }
+
+        // ==========================================
+        // DYNAMIC REVIEWS SCRIPTING (Firestore integration)
+        // ==========================================
+
+        function setReviewRating(rating) {
+            userReviewRating = rating;
+            const stars = document.querySelectorAll('#star-rating-selector .star-opt');
+            stars.forEach((star, idx) => {
+                if (idx < rating) {
+                    star.className = "fa-solid fa-star cursor-pointer text-amber-500 star-opt";
+                } else {
+                    star.className = "fa-solid fa-star cursor-pointer text-gray-500 star-opt";
+                }
+            });
+        }
+
+        // ==========================================
+        // ADMIN TAB SWITCHING
+        // ==========================================
+        function switchAdminTab(tab) {
+            const ordersTab = document.getElementById('orders-tab-content');
+            const reviewsTab = document.getElementById('reviews-tab-content');
+            const tabOrders = document.getElementById('tab-orders');
+            const tabReviews = document.getElementById('tab-reviews');
+
+            if (tab === 'orders') {
+                ordersTab.classList.remove('hidden');
+                reviewsTab.classList.add('hidden');
+                tabOrders.className = 'text-xs font-bold px-4 py-2 bg-velo-600 text-white rounded-lg transition-colors';
+                tabReviews.className = 'text-xs font-bold px-4 py-2 bg-velo-dark text-gray-400 rounded-lg border border-velo-800 hover:bg-velo-800 transition-colors';
+            } else {
+                ordersTab.classList.add('hidden');
+                reviewsTab.classList.remove('hidden');
+                tabReviews.className = 'text-xs font-bold px-4 py-2 bg-velo-600 text-white rounded-lg transition-colors';
+                tabOrders.className = 'text-xs font-bold px-4 py-2 bg-velo-dark text-gray-400 rounded-lg border border-velo-800 hover:bg-velo-800 transition-colors';
+                loadAdminReviews();
+            }
+        }
+
+        // ==========================================
+        // ADMIN REVIEWS MANAGEMENT
+        // ==========================================
+        let adminReviewsList = [];
+
+        function loadAdminReviews() {
+            const container = document.getElementById('admin-reviews-list');
+            if (!container) return;
+            container.innerHTML = `<p class="text-center text-gray-400 text-xs py-6"><i class="fa-solid fa-spinner animate-spin ml-2"></i> جاري تحميل التقييمات...</p>`;
+
+            const reviewsCollection = getReviewsCollection();
+            if (reviewsCollection) {
+                reviewsCollection.get().then((snap) => {
+                    adminReviewsList = [];
+                    snap.forEach((doc) => adminReviewsList.push({ docId: doc.id, ...doc.data() }));
+                    adminReviewsList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    renderAdminReviews();
+                }).catch(err => {
+                    container.innerHTML = `<p class="text-center text-red-500 text-xs py-4">فشل تحميل التقييمات: ${err.message}</p>`;
+                });
+            } else {
+                container.innerHTML = `<p class="text-center text-gray-500 text-xs py-4">قاعدة البيانات غير متوفرة.</p>`;
+            }
+        }
+
+        function renderAdminReviews() {
+            const container = document.getElementById('admin-reviews-list');
+            if (!container) return;
+            if (adminReviewsList.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 text-xs py-6">لا توجد تقييمات بعد.</p>`;
+                return;
+            }
+            container.innerHTML = adminReviewsList.map(rev => {
+                let stars = '';
+                for (let i = 0; i < 5; i++) stars += `<i class="fa-${i < rev.rating ? 'solid' : 'regular'} fa-star ${i < rev.rating ? 'text-amber-500' : 'text-gray-600'}"></i>`;
+                const dateStr = rev.timestamp ? new Date(rev.timestamp).toLocaleDateString('ar-SA') : '—';
+                return `
+                <div class="bg-velo-dark border border-velo-800 rounded-xl p-4 flex items-start justify-between gap-3">
+                    <div class="flex-grow space-y-1">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-white text-sm">${escapeHtml(rev.name)}</span>
+                            <span class="text-[9px] text-gray-500">${dateStr}</span>
+                        </div>
+                        <div class="flex gap-0.5 text-[11px]">${stars}</div>
+                        <p class="text-xs text-gray-300 leading-relaxed">"${escapeHtml(rev.comment)}"</p>
+                    </div>
+                    <button onclick="deleteReview('${rev.docId}')" class="text-red-500 hover:text-red-400 p-2 text-sm shrink-0" title="حذف التقييم">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
+        function deleteReview(docId) {
+            const reviewsCollection = getReviewsCollection();
+            if (db && reviewsCollection) {
+                reviewsCollection.doc(docId).delete().then(() => {
+                    showNotification('تم الحذف ✅', 'تم حذف التقييم بنجاح من قاعدة البيانات.');
+                    loadAdminReviews();
+                    loadDynamicReviews();
+                }).catch(err => {
+                    showNotification('خطأ!', 'فشل حذف التقييم: ' + err.message, false);
+                });
+            } else {
+                showNotification('خطأ!', 'قاعدة البيانات غير متوفرة.', false);
+            }
+        }
+
+        async function submitUserReview() {
+            const nameInput = document.getElementById('review-user-name');
+            const commentInput = document.getElementById('review-user-comment');
+            const submitBtn = document.getElementById('review-submit-btn');
+
+            if (!nameInput || !commentInput) return;
+
+            const name = nameInput.value.trim();
+            const comment = commentInput.value.trim();
+
+            if (!name || !comment) {
+                showNotification('حقول فارغة!', 'يرجى إدخال اسمك الكريم وكتابة تعليقك أولاً قبل الإرسال.', false);
+                return;
+            }
+
+            // Wait briefly for auth if not ready yet
+            if (auth && !auth.currentUser) {
+                try { await auth.signInAnonymously(); } catch(e) {}
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "جاري إرسال تقييمك السحابي... ⏳";
+
+            const reviewPayload = {
+                id: 'REV-' + Date.now(),
+                name: name,
+                rating: userReviewRating,
+                comment: comment,
+                timestamp: new Date().toISOString()
+            };
+
+            const reviewsCollection = getReviewsCollection();
+            if (reviewsCollection) {
+                reviewsCollection.add(reviewPayload)
+                .then(() => {
+                    showNotification('تم الإرسال بنجاح! ⭐', 'شكراً لك على تقييمك ودعمك المستمر لمتجر ڤيلو!');
+                    nameInput.value = "";
+                    commentInput.value = "";
+                    setReviewRating(5);
+                    loadDynamicReviews(); // Reload list dynamically
+                })
+                .catch(err => {
+                    console.error("Error sending review: ", err);
+                    showNotification('فشل الإرسال', 'حدث خطأ أثناء حفظ تقييمك في السحابة.', false);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "إرسال التقييم السحابي مباشرة 🚀";
+                });
+            } else {
+                showNotification('خطأ في النظام', 'قاعدة البيانات السحابية غير متوفرة حالياً.', false);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "إرسال التقييم السحابي مباشرة 🚀";
+            }
+        }
+
+        function loadDynamicReviews() {
+            const container = document.getElementById('dynamic-reviews-container');
+            if (!container) return;
+
+            container.innerHTML = `<div class="col-span-full text-center py-6 text-gray-500"><i class="fa-solid fa-spinner animate-spin text-xl text-velo-500 block mb-2"></i> جاري تحميل تقييمات الزبائن الحقيقية من السحابة...</div>`;
+
+            const reviewsCollection = getReviewsCollection();
+            if (reviewsCollection) {
+                reviewsCollection.get().then((querySnapshot) => {
+                    let reviews = [];
+                    querySnapshot.forEach((doc) => {
+                        reviews.push(doc.data());
+                    });
+
+                    // Sort locally by timestamp descending (Rule 2 Compound query guard)
+                    reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                    renderReviewsUI(reviews);
+                }).catch(err => {
+                    console.error("Error loading reviews: ", err);
+                    container.innerHTML = `<div class="col-span-full text-center py-6 text-red-500">فشل في تحميل التقييمات السحابية.</div>`;
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 space-y-2">
+                        <i class="fa-solid fa-heart-broken text-velo-800 text-3xl"></i>
+                        <p class="text-xs text-gray-500">لا توجد تقييمات بعد. كن أول من يشاركنا تجربته الأسطورية! ✨</p>
+                    </div>`;
+            }
+        }
+
+        function renderReviewsUI(reviews) {
+            const container = document.getElementById('dynamic-reviews-container');
+            if (!container) return;
+
+            if (reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 space-y-2 bg-velo-card/30 rounded-2xl border border-velo-800/40">
+                        <i class="fa-solid fa-star-half-stroke text-velo-500 text-3xl block animate-bounce"></i>
+                        <h6 class="text-sm font-bold text-white">لا توجد تقييمات منشورة بعد!</h6>
+                        <p class="text-[10px] text-gray-500">تقييمك مهم جداً لنا، كن أول زبون يشاركنا تجربته في تزويد فورزا بالنموذج أدناه! 👇</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = reviews.map(rev => {
+                let starsHTML = "";
+                for (let i = 0; i < 5; i++) {
+                    if (i < rev.rating) {
+                        starsHTML += `<i class="fa-solid fa-star text-amber-500 mr-0.5"></i>`;
+                    } else {
+                        starsHTML += `<i class="fa-regular fa-star text-gray-600 mr-0.5"></i>`;
+                    }
+                }
+
+                // Friendly relative time conversion
+                const dateStr = rev.timestamp ? new Date(rev.timestamp).toLocaleDateString('ar-SA') : "حديثاً";
+
+                return `
+                <div class="bg-velo-card p-6 rounded-2xl border border-velo-800/30 hover:border-velo-600/50 transition-all transform hover:-translate-y-0.5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex text-xs">
+                            ${starsHTML}
+                        </div>
+                        <span class="text-[9px] text-gray-500 font-mono">${dateStr}</span>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed italic">
+                        "${escapeHtml(rev.comment)}"
+                    </p>
+                    <div class="mt-4 flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-velo-800 flex items-center justify-center text-[10px] font-bold text-white">
+                            ${escapeHtml(rev.name.charAt(0))}
+                        </div>
+                        <span class="text-xs font-bold text-velo-100">${escapeHtml(rev.name)}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Order tracking function for customers
+        function trackOrder() {
+            const input = document.getElementById('track-order-input');
+            const resultDiv = document.getElementById('track-result');
+            const orderId = input.value.trim().toUpperCase();
+
+            if (!orderId || orderId.length < 5) {
+                showNotification('تنبيه!', 'يرجى إدخال رقم الطلب كاملاً.', false);
+                return;
+            }
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `<p class="text-center text-gray-400 text-xs"><i class="fa-solid fa-spinner animate-spin ml-2"></i> جاري البحث عن طلبك...</p>`;
+
+            const ordersCollection = getOrdersCollection();
+            if (ordersCollection) {
+                ordersCollection.doc(orderId).get().then(doc => {
+                    if (doc.exists) {
+                        const order = doc.data();
+                        const statusColor = order.status.includes('تم التنفيذ') ? 'text-emerald-500' :
+                                           order.status.includes('مرفوض') ? 'text-red-500' :
+                                           order.status.includes('قيد التنفيذ') ? 'text-blue-400' : 'text-amber-500';
+                        const dateStr = order.timestamp ? new Date(order.timestamp).toLocaleDateString('ar-SA') : '—';
+                        resultDiv.innerHTML = `
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between"><span class="text-gray-400">رقم الطلب:</span><span class="font-mono font-bold text-white">${escapeHtml(order.orderId)}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">تاريخ الطلب:</span><span class="text-white">${dateStr}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">المبلغ:</span><span class="font-bold text-white">${order.totalPrice} ريال</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">المنصة:</span><span class="text-white">${escapeHtml(order.platform)}</span></div>
+                                <div class="flex justify-between items-center border-t border-velo-800 pt-2 mt-2">
+                                    <span class="text-gray-400 font-bold">حالة الطلب:</span>
+                                    <span class="font-black ${statusColor}">${escapeHtml(order.status)}</span>
+                                </div>
+                            </div>`;
+                    } else {
+                        resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2"><i class="fa-solid fa-circle-xmark ml-1"></i> لم يتم العثور على هذا الرقم. تأكد من الرقم وحاول مجدداً.</p>`;
+                    }
+                }).catch(err => {
+                    resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2">خطأ في الاتصال بقاعدة البيانات.</p>`;
+                });
+            } else {
+                // fallback local
+                const order = ordersList.find(o => o.orderId === orderId);
+                if (order) {
+                    resultDiv.innerHTML = `<p class="text-center text-emerald-400 text-xs py-2">حالة طلبك: ${escapeHtml(order.status)}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2">لم يتم العثور على الطلب.</p>`;
+                }
+            }
+        }
+
+        // Helper to escape HTML safely
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
