@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Velo Store | متجر ڤيلو لخدمات فورزا</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-5D0ofp3Gq5i+LXK3X7CxQCC2k30fXBLGqNo4i7o6MaD2m4r7X5I4Wz0N1Dx2HkFJc6/hQ4QTJ2eM2vZ5b3eQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <!-- Favicon -->
@@ -772,42 +773,9 @@
 
     <!-- JS Logic Block -->
     <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
     <script>
-        /* 
-         * ======== إعداد Supabase ========
-         * لإعداد قاعدة البيانات:
-         * 1. روح supabase.com → Create project
-         * 2. SQL Editor → New Query → الصق هذا الكود:
-         *
-         * CREATE TABLE orders (
-         *   "orderId" TEXT PRIMARY KEY,
-         *   "clientPhone" TEXT,
-         *   "platform" TEXT,
-         *   "totalPrice" NUMERIC,
-         *   "products" TEXT,
-         *   "status" TEXT DEFAULT 'بانتظار التحقق ⏳',
-         *   "timestamp" TEXT,
-         *   "created_at" TIMESTAMPTZ DEFAULT NOW()
-         * );
-         * CREATE TABLE reviews (
-         *   "id" TEXT PRIMARY KEY,
-         *   "name" TEXT,
-         *   "rating" INTEGER,
-         *   "comment" TEXT,
-         *   "timestamp" TEXT,
-         *   "created_at" TIMESTAMPTZ DEFAULT NOW()
-         * );
-         *
-         * CREATE TABLE admin_config (
-         *   "key" TEXT PRIMARY KEY,
-         *   "value" TEXT NOT NULL
-         * );
-         * -- INSERT INTO admin_config VALUES ('password_hash', 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1');
-         *
-         * 3. Project Settings → API → انسخ URL و anon key
-         * 4. حطهم تحت ↓
-         */
+        /* Supabase setup */
         const SUPABASE_URL = 'https://mrjhvoqtvcljgqoabibz.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_eapQOjLaO4ME5IAQWvOuqQ_MKS6CFwL';
         
@@ -815,9 +783,8 @@
         try {
             if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('Supabase connected ✅');
             }
-        } catch(e) { console.log('Supabase not configured, using localStorage only'); }
+        } catch(e) {} // localStorage fallback
 
         // State variables
         let selectedF6SonyOption = null;
@@ -833,12 +800,8 @@
             // Test localStorage
             try {
                 localStorage.setItem('velo_test', 'ok');
-                const test = localStorage.getItem('velo_test');
-                console.log('localStorage test:', test === 'ok' ? '✅ يعمل' : '❌ لا يعمل');
                 localStorage.removeItem('velo_test');
-            } catch(e) {
-                console.error('localStorage غير متاح:', e);
-            }
+            } catch(e) {} // localStorage غير متاح
         }
 
         // Real-time check for new orders (every 5 seconds)
@@ -1216,59 +1179,57 @@
             } catch(e) { return []; }
         }
 
+        function saveReviewsToLocalStorage() {
+            try { localStorage.setItem('velo_reviews', JSON.stringify(adminReviewsList || [])); } catch(e) {}
+        }
+
+        function getReviewsFromLocalStorage() {
+            try {
+                const data = localStorage.getItem('velo_reviews');
+                return data ? JSON.parse(data) : [];
+            } catch(e) { return []; }
+        }
+
         // ======== Supabase Sync ========
         async function syncOrderToSupabase(orderPayload) {
             if (!supabaseClient) return;
-            try {
-                const { error } = await supabaseClient.from('orders').upsert(orderPayload, { onConflict: 'orderId' });
-                if (error) console.warn('Supabase save warning:', error.message);
-            } catch(e) { console.warn('Supabase sync failed:', e); }
+            try { await supabaseClient.from('orders').upsert(orderPayload, { onConflict: 'orderId' }); } catch(e) {}
         }
 
         async function loadOrdersFromSupabase() {
             if (!supabaseClient) return null;
             try {
                 const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                return data || [];
-            } catch(e) { console.warn('Supabase load failed:', e); return null; }
+                return error ? null : (data || []);
+            } catch(e) { return null; }
         }
 
         async function deleteOrderFromSupabase(orderId) {
             if (!supabaseClient) return;
-            try {
-                await supabaseClient.from('orders').delete().eq('orderId', orderId);
-            } catch(e) {}
+            try { await supabaseClient.from('orders').delete().eq('orderId', orderId); } catch(e) {}
         }
 
         async function updateOrderStatusInSupabase(orderId, status) {
             if (!supabaseClient) return;
-            try {
-                await supabaseClient.from('orders').update({ status }).eq('orderId', orderId);
-            } catch(e) {}
+            try { await supabaseClient.from('orders').update({ status }).eq('orderId', orderId); } catch(e) {}
         }
 
         async function syncReviewToSupabase(review) {
             if (!supabaseClient) return;
-            try {
-                await supabaseClient.from('reviews').upsert(review, { onConflict: 'id' });
-            } catch(e) {}
+            try { await supabaseClient.from('reviews').upsert(review, { onConflict: 'id' }); } catch(e) {}
         }
 
         async function loadReviewsFromSupabase() {
             if (!supabaseClient) return null;
             try {
                 const { data, error } = await supabaseClient.from('reviews').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                return data || [];
+                return error ? null : (data || []);
             } catch(e) { return null; }
         }
 
         async function deleteReviewFromSupabase(id) {
             if (!supabaseClient) return;
-            try {
-                await supabaseClient.from('reviews').delete().eq('id', id);
-            } catch(e) {}
+            try { await supabaseClient.from('reviews').delete().eq('id', id); } catch(e) {}
         }
 
         function executeMockPayment() {
@@ -1298,8 +1259,6 @@
                 ordersList.push(orderPayload);
                 saveOrdersToLocalStorage();
                 syncOrderToSupabase(orderPayload);
-                console.log('✅ Order saved:', orderId);
-
                 const isSony = platform === 'PlayStation';
                 const hasF5Sony = cart.some(item => item.title.includes('فورزا 5') || item.details?.includes('FH5'));
                 const hasF6Sony = cart.some(item => item.title.includes('فورزا 6') || item.details?.includes('FH6'));
@@ -1383,21 +1342,16 @@
         // Admin Logic
         async function hashString(str) {
             const msgBuffer = new TextEncoder().encode(str);
+            if (!window.crypto || !window.crypto.subtle) return null;
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        async function verifyAdminLogin() {
+        function verifyAdminLogin() {
             const passcode = document.getElementById('admin-passcode').value;
             const btn = document.getElementById('admin-login-btn');
             if (btn) { btn.disabled = true; btn.innerHTML = 'جاري التحقق... <i class="fa-solid fa-spinner fa-spin"></i>'; }
-
-            if (!window.crypto || !window.crypto.subtle) {
-                showNotification('خطأ!', 'المتصفح لا يدعم التشفير اللازم.', false);
-                if (btn) { btn.disabled = false; btn.innerHTML = 'تسجيل الدخول ومراقبة المبيعات'; }
-                return;
-            }
 
             const correctHash = 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1';
 
@@ -1431,20 +1385,17 @@
                 if (btn) { btn.disabled = false; btn.innerHTML = 'تسجيل الدخول ومراقبة المبيعات'; }
             };
 
-            try {
-                const hashed = await hashString(passcode);
-                if (hashed === correctHash) { doLogin(); return; }
-
-                // Try Supabase as backup verification
-                if (supabaseClient) {
-                    const { data } = await supabaseClient.from('admin_config').select('value').eq('key', 'password_hash').single();
-                    if (data && data.value === hashed) { doLogin(); return; }
-                }
-
-                fail('الرمز السري غير صحيح.');
-            } catch(e) {
-                fail('حدث خطأ في التحقق.');
+            if (!window.crypto || !window.crypto.subtle) {
+                fail('المتصفح لا يدعم التشفير اللازم.');
+                return;
             }
+
+            hashString(passcode).then(hashed => {
+                if (hashed === correctHash) { doLogin(); return; }
+                fail('الرمز السري غير صحيح.');
+            }).catch(() => {
+                fail('حدث خطأ في التحقق.');
+            });
         }
 
         // Delete order
@@ -1498,17 +1449,25 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const imported = JSON.parse(e.target.result);
+                    const imported = JSON.parse(e.target.result, (key, val) =>
+                        ['__proto__', 'constructor', 'prototype'].includes(key) ? undefined : val
+                    );
                     if (!Array.isArray(imported)) throw new Error('Invalid format');
+                    const allowedKeys = ['orderId','clientPhone','platform','totalPrice','products','status','timestamp'];
+                    const sanitized = imported.map(o => {
+                        const clean = {};
+                        allowedKeys.forEach(k => { if (o[k] !== undefined) clean[k] = o[k]; });
+                        return clean;
+                    });
                     const existing = getOrdersFromLocalStorage();
                     const mergedMap = new Map();
                     existing.forEach(o => mergedMap.set(o.orderId, o));
-                    imported.forEach(o => mergedMap.set(o.orderId, o));
+                    sanitized.forEach(o => mergedMap.set(o.orderId, o));
                     ordersList = Array.from(mergedMap.values());
                     ordersList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                     saveOrdersToLocalStorage();
                     renderAdminOrdersTable(ordersList);
-                    showNotification('✅ تم الاستيراد', `تم استيراد ${imported.length} طلب بنجاح!`);
+                    showNotification('✅ تم الاستيراد', `تم استيراد ${sanitized.length} طلب بنجاح!`);
                 } catch(err) {
                     showNotification('خطأ!', 'الملف غير صحيح.', false);
                 }
@@ -1700,18 +1659,6 @@
         // ADMIN REVIEWS MANAGEMENT
         // ==========================================
         let adminReviewsList = [];
-
-        // ========== REVIEWS (localStorage) ==========
-        function saveReviewsToLocalStorage() {
-            try { localStorage.setItem('velo_reviews', JSON.stringify(adminReviewsList)); } catch(e) {}
-        }
-
-        function getReviewsFromLocalStorage() {
-            try {
-                const data = localStorage.getItem('velo_reviews');
-                return data ? JSON.parse(data) : [];
-            } catch(e) { return []; }
-        }
 
         async function loadAdminReviews() {
             const container = document.getElementById('admin-reviews-list');
