@@ -491,33 +491,25 @@
                         <div class="space-y-3 text-xs">
                             <div id="platform-dropdown-wrapper">
                                 <label class="block text-gray-400 mb-1">المنصة التي تلعب عليها الحساب:</label>
-                                <select id="user-platform" onchange="toggleCredentialsVisibility()" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
-                                    <option value="Xbox / PC App">تطبيق إكس بوكس / بيسي [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
-                                    <option value="PlayStation">بلاي ستيشن (سوني) [طريقة المزاد الآمنة بدون بيانات]</option>
-                                    <option value="Steam">منصة ستيم (Steam) [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
+                                <select id="user-platform" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                                    <option value="Xbox / PC App">تطبيق إكس بوكس / بيسي</option>
+                                    <option value="PlayStation">بلاي ستيشن (سوني) - المزاد</option>
+                                    <option value="Steam">منصة ستيم (Steam)</option>
                                 </select>
-                            </div>
-
-                            <!-- Credentials fields only shown for non-PlayStation -->
-                            <div id="platform-creds-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
-                                <div>
-                                    <label class="block text-gray-400 mb-1">البريد الإلكتروني (الإيميل):</label>
-                                    <input type="email" id="user-email" placeholder="example@outlook.com" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-gray-400 mb-1">كلمة المرور (الباسورد):</label>
-                                    <input type="password" id="user-password" placeholder="••••••••" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
-                                </div>
-                            </div>
-
-                            <!-- Sony Custom Info instructions -->
-                            <div id="sony-instruction-text" class="bg-velo-800/30 p-3 rounded-lg border border-velo-700/40 text-[11px] text-gray-300">
-                                📌 <strong class="text-white">تنويه المزاد:</strong> بما أنك اخترت منصة السوني، لن يتم طلب تسجيل دخول حسابك. بعد إتمام الدفع، ستتواصل معنا عبر واتساب لترسل لنا اسم سيارتك المعروضة لنشتريها منك مباشرة!
                             </div>
 
                             <div>
                                 <label class="block text-gray-400 mb-1">رقم الواتساب الخاص بك لمتابعة التنفيذ:</label>
                                 <input type="tel" id="user-phone" placeholder="05xxxxxxxx" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                            </div>
+
+                            <div id="sony-instruction" class="bg-purple-500/10 border border-purple-500/30 p-3 rounded-lg text-[11px] text-gray-300 hidden">
+                                📌 <strong class="text-white">طريقة المزاد (السوني):</strong>
+                                نحدد لك سيارة معينة مع السعر، تنزلها في المزاد، وتعطينا <strong class="text-white">اسم حسابك في فورزا (Gamertag)</strong>، وندخل نشتريها منك فوراً بأعلى سعر. المبالغ تتحول لك فوراً وبأمان تام.
+                            </div>
+                            <div id="pc-instruction" class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg text-[11px] text-gray-300 hidden">
+                                📌 <strong class="text-white">إرسال بيانات الحساب:</strong>
+                                بعد تأكيد الطلب، راح نوجهك للواتساب عشان ترسل لنا بيانات تسجيل الدخول (الإيميل والباسورد) الخاصة بحسابك في فورزا.
                             </div>
                         </div>
                     </div>
@@ -563,51 +555,16 @@
                         </div>
                     </div>
 
-                    <!-- Receipt Upload Input -->
-                    <div class="space-y-2 text-xs">
-                        <label class="block text-gray-400 font-bold">اسم المحوّل (صاحب الحساب البنكي):</label>
-                        <input type="text" id="sender-bank-name" placeholder="ادخل اسمك بالكامل هنا للتحقق" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-lg text-[11px] text-gray-300 leading-relaxed">
+                        ✅ بعد التحويل، اضغط على الزر أدناه لإرسال الطلب عبر واتساب مع إرفاق بيانات الحساب وصورة الإيصال.
                     </div>
 
-                    <div class="space-y-2 text-xs">
-                        <label class="block text-gray-400 font-bold">إرفاق إيصال التحويل (صورة):</label>
-                        <div class="border-2 border-dashed border-velo-800 rounded-xl p-4 text-center bg-velo-dark/30 hover:border-velo-500 transition-colors relative">
-                            <input type="file" id="sender-receipt-file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleReceiptFileSelect()">
-                            <div class="space-y-1" id="file-upload-placeholder">
-                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-velo-500"></i>
-                                <span class="block text-[11px] text-gray-400" id="file-name-text">اضغط هنا لرفع صورة إيصال التحويل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="button" onclick="executeMockPayment()" class="w-full bg-velo-600 hover:bg-velo-500 text-white font-black py-3 rounded-xl text-xs transition-colors shadow-lg shadow-velo-600/30 flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-circle-check text-sm"></i>
-                        تم التحويل البنكي وتأكيد الطلب
+                    <button type="button" onclick="executeMockPayment()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl text-xs transition-colors shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        إرسال الطلب عبر واتساب
                     </button>
                 </div>
 
-                <!-- SCREEN 3: Payment Success / Processing -->
-                <div id="checkout-screen-3" class="py-8 text-center space-y-4 hidden">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 text-3xl animate-bounce">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <h5 class="text-lg font-black text-white">تم استلام طلبك وبانتظار المراجعة!</h5>
-                    <!-- Order ID Display -->
-                    <div class="bg-velo-dark border border-velo-700 rounded-xl p-4 mx-auto max-w-xs">
-                        <span class="text-[10px] text-gray-400 block mb-1">رقم طلبك المرجعي:</span>
-                        <div class="flex items-center justify-center gap-2">
-                            <span id="customer-order-id" class="text-lg font-black text-velo-500 font-mono tracking-widest">—</span>
-                            <button onclick="copyToClipboard(document.getElementById('customer-order-id').innerText)" class="text-velo-500 hover:text-white p-1 text-sm"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-                        <span class="text-[9px] text-gray-500 block mt-1">احتفظ بهذا الرقم لمتابعة طلبك</span>
-                    </div>
-                    <p class="text-xs text-gray-400 max-w-sm mx-auto leading-relaxed">
-                        لقد تم تسجيل الطلب في السجلات بنجاح. سيتم توجيهك الآن إلى الدعم الفني عبر واتساب لإرسال الإيصال المباشر والبدء في تعبئة حسابك فوراً!
-                    </p>
-                    <button onclick="forwardToWhatsapp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl text-xs transition-colors inline-flex items-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> الانتقال إلى واتساب لتأكيد الدفع والتنفيذ
-                    </button>
-                </div>
             </div>
 
             <!-- Modal Footer (Shown only in Screen 1 & Screen 2) -->
@@ -655,7 +612,7 @@
                     </div>
                     <div class="space-y-3 text-xs">
                         <input type="password" id="admin-passcode" placeholder="ادخل كلمة مرور الإدارة" class="w-full bg-velo-input border border-velo-800 rounded-lg p-3 text-white focus:border-velo-500 focus:outline-none text-center text-sm font-mono">
-                        <button onclick="verifyAdminLogin()" class="w-full bg-velo-600 hover:bg-velo-500 text-white font-bold py-3 rounded-lg text-xs transition-colors uppercase tracking-wider">
+                        <button id="admin-login-btn" onclick="verifyAdminLogin()" class="w-full bg-velo-600 hover:bg-velo-500 text-white font-bold py-3 rounded-lg text-xs transition-colors uppercase tracking-wider">
                             تسجيل الدخول ومراقبة المبيعات
                         </button>
                     </div>
@@ -719,7 +676,6 @@
                                         <th class="p-3">المنصة</th>
                                         <th class="p-3">المنتجات</th>
                                         <th class="p-3">المجموع</th>
-                                        <th class="p-3">اسم المحول</th>
                                         <th class="p-3">الحالة</th>
                                         <th class="p-3 text-center">الإجراءات</th>
                                     </tr>
@@ -828,12 +784,8 @@
          *   "orderId" TEXT PRIMARY KEY,
          *   "clientPhone" TEXT,
          *   "platform" TEXT,
-         *   "email" TEXT,
-         *   "password" TEXT,
-         *   "senderName" TEXT,
          *   "totalPrice" NUMERIC,
          *   "products" TEXT,
-         *   "receiptImage" TEXT,
          *   "status" TEXT DEFAULT 'بانتظار التحقق ⏳',
          *   "timestamp" TEXT,
          *   "created_at" TIMESTAMPTZ DEFAULT NOW()
@@ -846,6 +798,12 @@
          *   "timestamp" TEXT,
          *   "created_at" TIMESTAMPTZ DEFAULT NOW()
          * );
+         *
+         * CREATE TABLE admin_config (
+         *   "key" TEXT PRIMARY KEY,
+         *   "value" TEXT NOT NULL
+         * );
+         * -- INSERT INTO admin_config VALUES ('password_hash', 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1');
          *
          * 3. Project Settings → API → انسخ URL و anon key
          * 4. حطهم تحت ↓
@@ -865,8 +823,6 @@
         let selectedF6SonyOption = null;
         let selectedF5SonyOption = null;
         let cart = [];
-        let finalMessage = ""; // Stores message for final WhatsApp redirect
-        let receiptBase64 = ""; // Stores Base64 string of receipt
         let ordersList = []; // Array of retrieved orders from DB
         let userReviewRating = 5; // Global state for star selector
 
@@ -934,8 +890,8 @@
                     'تنفيذ وشراء المزاد في الموعد المحدد مباشرة.'
                 ],
                 options: [
-                    { name: '200 Million CR', price: 50, value: '200m' },
-                    { name: '500 Million CR', price: 70, value: '500m' }
+                    { name: '200 Million CR', price: 49, value: '200m', originalPrice: 69 },
+                    { name: '500 Million CR', price: 69, value: '500m', originalPrice: 98 }
                 ]
             },
             {
@@ -952,8 +908,8 @@
                     'آمن بنسبة 100% ولا يوجد أي احتمالية للباند.'
                 ],
                 options: [
-                    { name: '200 Million CR', price: 25, value: '200m' },
-                    { name: '500 Million CR', price: 62.5, value: '500m' }
+                    { name: '200 Million CR', price: 25, value: '200m', originalPrice: 45 },
+                    { name: '500 Million CR', price: 59, value: '500m', originalPrice: 90 }
                 ]
             },
             {
@@ -964,7 +920,8 @@
                 badge: 'FORZA HORIZON 6',
                 icon: 'fa-solid fa-desktop',
                 type: 'generic',
-                price: 110,
+                price: 89,
+                originalPrice: 119,
                 details: 'باقة التمكيس الشامل لـ FH6',
                 features: [
                     'فلوس $999M CR$',
@@ -981,7 +938,8 @@
                 badge: 'FORZA HORIZON 5',
                 icon: 'fa-solid fa-desktop',
                 type: 'generic',
-                price: 40,
+                price: 39,
+                originalPrice: 65,
                 details: 'باقة تمكيس الفلوس والويل سبنز لـ FH5',
                 features: [
                     'فلوس $999,999,999$ CR',
@@ -1006,7 +964,10 @@
                                     <i class="${p.icon}"></i> ${p.platform}
                                 </div>
                             </div>
-                            <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                                ${p.options.some(o => o.originalPrice) ? '<span class="bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">عرض 🔥</span>' : ''}
+                            </div>
                             <p class="text-xs text-gray-400 leading-relaxed">${p.desc}</p>
                             <ul class="text-xs space-y-2 text-gray-300 bg-velo-dark/50 p-3.5 rounded-xl border border-velo-800/30">
                                 ${p.features.map(f => `<li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> ${f}</li>`).join('')}
@@ -1017,7 +978,7 @@
                                     ${p.options.map(o => `
                                         <button type="button" onclick="selectSonyOption('${p.type}', '${o.value}', ${o.price})" id="${p.type}-${o.value}" class="${p.type}-opt py-3 px-4 rounded-xl border border-velo-800 bg-velo-dark/30 hover:border-velo-500 text-center font-bold text-sm transition-all text-white flex flex-col items-center gap-1">
                                             <span>${o.name}</span>
-                                            <span class="text-velo-500 text-xs">${o.price} ريال</span>
+                                            <span class="text-xs flex items-center gap-1 justify-center">${o.originalPrice ? `<span class="text-gray-500 line-through">${o.originalPrice}</span>` : ''}<span class="text-velo-500">${o.price} ريال</span></span>
                                         </button>
                                     `).join('')}
                                 </div>
@@ -1043,7 +1004,10 @@
                                     <i class="${p.icon}"></i> ${p.platform}
                                 </div>
                             </div>
-                            <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xl font-bold text-white">${p.title}</h4>
+                                ${p.originalPrice ? '<span class="bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">عرض 🔥</span>' : ''}
+                            </div>
                             <p class="text-xs text-gray-400 leading-relaxed">${p.desc}</p>
                             <div class="space-y-3 bg-velo-dark/50 p-4 rounded-xl border border-velo-800/30">
                                 <span class="text-[11px] font-bold text-velo-500 block uppercase tracking-wide">مميزات التمكيس الشامل:</span>
@@ -1056,7 +1020,10 @@
                         <div class="p-6 bg-velo-dark/40 border-t border-velo-800/30 flex justify-between items-center gap-4">
                             <div>
                                 <span class="text-[10px] text-gray-400 block">سعر التمكيس الشامل:</span>
-                                <span class="text-2xl font-black text-white">${p.price} ريال</span>
+                                <div class="flex items-center gap-2">
+                                    ${p.originalPrice ? `<span class="text-sm text-gray-500 line-through">${p.originalPrice} ريال</span>` : ''}
+                                    <span class="text-2xl font-black text-white">${p.price} ريال</span>
+                                </div>
                             </div>
                             <button onclick="addGenericToCart('${p.title}', ${p.price}, '${p.platform}')" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-2">
                                 <i class="fa-solid fa-cart-plus"></i> إضافة للسلة
@@ -1137,6 +1104,7 @@
             if (cart.length > 0) {
                 if (emptyStateEl) emptyStateEl.classList.add('hidden');
                 if (credentialsForm) credentialsForm.classList.remove('hidden');
+                togglePlatformVisibility();
             } else {
                 if (emptyStateEl) emptyStateEl.classList.remove('hidden');
                 if (credentialsForm) credentialsForm.classList.add('hidden');
@@ -1162,7 +1130,6 @@
             let total = 0; cart.forEach(i => total += i.price);
             totalPriceEl.forEach(el => el.innerText = `${total} ريال`);
             
-            toggleCredentialsVisibility();
         }
 
         function removeItem(id) {
@@ -1172,33 +1139,33 @@
         }
 
         function allCartItemsAreSony() {
-            return cart.length > 0 && cart.every(item => 
+            return cart.length > 0 && cart.every(item =>
                 item.platform === 'Sony PlayStation' || item.platform === 'سوني (طريقة المزاد)'
             );
         }
 
-        function toggleCredentialsVisibility() {
+        function togglePlatformVisibility() {
+            const isSony = allCartItemsAreSony();
+            const wrapper = document.getElementById('platform-dropdown-wrapper');
+            const sonyInfo = document.getElementById('sony-instruction');
+            const pcInfo = document.getElementById('pc-instruction');
             const platformSelect = document.getElementById('user-platform');
-            const platform = platformSelect ? platformSelect.value : '';
-            const credsContainer = document.getElementById('platform-creds-container');
-            const sonyInstruction = document.getElementById('sony-instruction-text');
-            const platformWrapper = document.getElementById('platform-dropdown-wrapper');
 
-            if (!credsContainer || !sonyInstruction || !platformWrapper) return;
-
-            if (allCartItemsAreSony()) {
-                platformSelect.value = 'PlayStation';
-                platformWrapper.style.display = 'none';
-                credsContainer.classList.add('hidden');
-                sonyInstruction.classList.remove('hidden');
+            if (isSony) {
+                if (wrapper) wrapper.classList.add('hidden');
+                if (sonyInfo) sonyInfo.classList.remove('hidden');
+                if (pcInfo) pcInfo.classList.add('hidden');
+                if (platformSelect) platformSelect.value = 'PlayStation';
             } else {
-                platformWrapper.style.display = '';
-                if (platform === 'PlayStation') {
-                    credsContainer.classList.add('hidden');
-                    sonyInstruction.classList.remove('hidden');
-                } else {
-                    credsContainer.classList.remove('hidden');
-                    sonyInstruction.classList.add('hidden');
+                if (wrapper) wrapper.classList.remove('hidden');
+                if (sonyInfo) sonyInfo.classList.add('hidden');
+                if (pcInfo) pcInfo.classList.remove('hidden');
+                // Show only PC/Xbox options
+                if (platformSelect) {
+                    platformSelect.innerHTML = `
+                        <option value="Xbox / PC App">تطبيق إكس بوكس / بيسي</option>
+                        <option value="Steam">منصة ستيم (Steam)</option>
+                    `;
                 }
             }
         }
@@ -1220,20 +1187,10 @@
             }
 
             const phone = document.getElementById('user-phone').value.trim();
-            const platform = document.getElementById('user-platform').value;
 
             if (!phone) {
                 showNotification('معلومات ناقصة!', 'يرجى إدخال رقم الواتساب الخاص بك أولاً!', false);
                 return;
-            }
-
-            if (platform !== 'PlayStation') {
-                const email = document.getElementById('user-email').value.trim();
-                const password = document.getElementById('user-password').value.trim();
-                if (!email || !password) {
-                    showNotification('معلومات ناقصة!', 'يرجى تعبئة كامل بيانات الحساب للتسليم بنجاح.', false);
-                    return;
-                }
             }
 
             let totalSum = 0;
@@ -1246,22 +1203,6 @@
             document.getElementById('step-btn-2').className = 'text-xs font-bold px-3 py-1 bg-velo-600 text-white rounded-full';
 
             document.getElementById('payment-screen-total').innerText = `${totalSum} ريال`;
-        }
-
-        function handleReceiptFileSelect() {
-            const fileInput = document.getElementById('sender-receipt-file');
-            const fileNameText = document.getElementById('file-name-text');
-            
-            if (fileInput.files && fileInput.files[0]) {
-                const file = fileInput.files[0];
-                fileNameText.innerText = `تم اختيار: ${file.name}`;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    receiptBase64 = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
         }
 
         function saveOrdersToLocalStorage() {
@@ -1332,101 +1273,114 @@
 
         function executeMockPayment() {
             try {
-            const senderName = document.getElementById('sender-bank-name').value.trim();
-            
-            if (!senderName) {
-                showNotification('بيانات مطلوبة!', 'يرجى إدخال اسم المحوّل ثلاثياً لمطابقة الحساب البنكي!', false);
-                return;
-            }
+                const phone = document.getElementById('user-phone').value.trim();
+                const platform = document.getElementById('user-platform').value;
 
-            const phone = document.getElementById('user-phone').value.trim();
-            const platform = document.getElementById('user-platform').value;
-            const email = document.getElementById('user-email') ? document.getElementById('user-email').value.trim() : "";
-            const password = document.getElementById('user-password') ? document.getElementById('user-password').value.trim() : "";
+                let totalSum = 0;
+                let productsText = "";
+                cart.forEach((item, index) => {
+                    productsText += `${index + 1}. ${item.title} (${item.price} ريال) \n`;
+                    totalSum += item.price;
+                });
 
-            let totalSum = 0;
-            let productsText = "";
-            cart.forEach((item, index) => {
-                productsText += `${index + 1}. ${item.title} (${item.price} ريال) \n`;
-                totalSum += item.price;
-            });
+                const orderId = 'VLO-' + Math.floor(100000 + Math.random() * 900000);
 
-            const orderId = 'VLO-' + Math.floor(100000 + Math.random() * 900000);
+                const orderPayload = {
+                    orderId: orderId,
+                    clientPhone: phone,
+                    platform: platform,
+                    totalPrice: totalSum,
+                    products: productsText,
+                    status: "بانتظار التحقق ⏳",
+                    timestamp: new Date().toISOString()
+                };
 
-            const orderPayload = {
-                orderId: orderId,
-                clientPhone: phone,
-                platform: platform,
-                email: email || "طريقة المزاد (لا يوجد إيميل)",
-                password: password || "طريقة المزاد (لا يوجد باسورد)",
-                senderName: senderName,
-                totalPrice: totalSum,
-                products: productsText,
-                receiptImage: receiptBase64 || "",
-                status: "بانتظار التحقق ⏳",
-                timestamp: new Date().toISOString()
-            };
+                ordersList.push(orderPayload);
+                saveOrdersToLocalStorage();
+                syncOrderToSupabase(orderPayload);
+                console.log('✅ Order saved:', orderId);
 
-            // Save to localStorage (مضمون)
-            ordersList.push(orderPayload);
-            saveOrdersToLocalStorage();
-            // Sync to Supabase (إذا مضبوط)
-            syncOrderToSupabase(orderPayload);
-            console.log('✅ Order saved:', orderId);
+                const isSony = platform === 'PlayStation';
+                const hasF5Sony = cart.some(item => item.title.includes('فورزا 5') || item.details?.includes('FH5'));
+                const hasF6Sony = cart.some(item => item.title.includes('فورزا 6') || item.details?.includes('FH6'));
 
-            let message = `*طلب جديد قيد الانتظار من متجر Velo (VLO)* ⚡\n`;
-            message += `------------------------------------\n`;
-            message += `*رقم الفاتورة المميز:* ${orderId}\n`;
-            message += `------------------------------------\n`;
-            message += `*المنتجات المطلوبة:*\n${productsText}`;
-            message += `\n*حالة التحويل البنكي:* تم التحويل بنجاح ✅\n`;
-            message += `*اسم المحوّل:* ${senderName}\n`;
-            message += `*الإجمالي المصدق:* ${totalSum} ريال لصالـح نواف عادل\n`;
-            message += `------------------------------------\n`;
-            message += `*بيانات الحساب والمنصة:*\n`;
-            message += `- المنصة المحددة: ${platform}\n`;
-            
-            if (platform !== 'PlayStation') {
-                message += `- البريد الإلكتروني: ${email}\n`;
-                message += `- كلمة المرور: ${password}\n`;
-            } else {
-                message += `- طريقة التسليم: المزاد (بانتظار تواصل العميل لإرسال سيارته) 🚗\n`;
-            }
-            message += `- رقم تواصل العميل: ${phone}\n`;
-            message += `------------------------------------\n`;
-            
-            if (receiptBase64) {
-                message += `*📸 تم إرفاق صورة إيصال التحويل بنجاح!*\n`;
-                message += `⚠️ (فضلاً قم بإرسال صورة الإيصال كملف في هذه المحادثة أيضاً للتأكيد السريع والتحقق البصري).\n`;
-            } else {
-                message += `⚠️ (الرجاء إرفاق صورة إيصال التحويل البنكي الآن في هذه المحادثة للتحقق).\n`;
-            }
-            message += `\nالرجاء التحقق من الحساب البنكي وتنفيذ الخدمة فوراً!`;
+                let message = `🟣 VELO STORE | طلب جديد #${orderId}\n`;
+                message += `━━━━━━━━━━━━━━━━\n`;
+                message += `المنتجات:\n${productsText}`;
+                message += `الإجمالي: ${totalSum} ريال\n`;
+                message += `━━━━━━━━━━━━━━━━\n\n`;
+                message += `📌 لإكمال الطلب:\n\n`;
 
-            finalMessage = message;
+                if (isSony) {
+                    message += `━━━━━━━━━━━━━━━━\n`;
+                    message += `📌 اختر أحد الخيارين:\n\n`;
+                    message += `❶ إذا حولت المبلغ:\n`;
+                    message += `أرسل صورة الإيصال + اسم حسابك في فورزا\n\n`;
+                    message += `❷ إذا ما حولت:\n`;
+                    message += `حول على الحساب التالي ثم أرسل الإيصال:\n`;
+                    message += `━━━━━━━━━━━━━━━━\n`;
+                    message += `اسم المستفيد: نواف عادل بن حامد الشامي\n`;
+                    message += `رقم الحساب: 077040010006084740215\n`;
+                    message += `الآيبان: SA5780000859608014740215\n`;
+                    message += `السويفت: RJHISARI\n`;
+                    message += `━━━━━━━━━━━━━━━━\n\n`;
+                    message += `🎮 تعليمات المزاد:\n`;
+                    message += `① أرسل اسم حسابك في فورزا (Gamertag)\n`;
 
-            // Show order ID to customer
-            const customerOrderIdEl = document.getElementById('customer-order-id');
-            if (customerOrderIdEl) customerOrderIdEl.innerText = orderId;
+                    if (hasF5Sony) {
+                        message += `② اشتري سيارة BMW M3 2008 من اللعبة\n`;
+                        message += `③ نزلها في المزاد بسعر 12 مليون (أعلى سعر مسموح)\n`;
+                        message += `④ بع سيارة F12M أو غيرها إذا طلبنا منك\n`;
+                        message += `⑤ نزل أكثر من وحدة واعطنا اسم حسابك نشتريها\n`;
+                    } else if (hasF6Sony) {
+                        message += `② السيارة المطلوبة لم تحدد بعد - سنخبرك بها\n`;
+                        message += `③ نزلها في المزاد واعطنا اسم حسابك نشتريها\n`;
+                    }
 
-            document.getElementById('checkout-screen-2').classList.add('hidden');
-            document.getElementById('checkout-screen-3').classList.remove('hidden');
+                    message += `\n✅ المبالغ تتحول لك فوراً، وما نحتاج إيميل ولا باسورد.\n`;
+                } else {
+                    message += `━━━━━━━━━━━━━━━━\n`;
+                    message += `📌 اختر أحد الخيارين:\n\n`;
+                    message += `❶ إذا حولت المبلغ:\n`;
+                    message += `أرسل صورة الإيصال + بيانات الحساب\n\n`;
+                    message += `❷ إذا ما حولت:\n`;
+                    message += `حول على الحساب التالي ثم أرسل الإيصال:\n`;
+                    message += `━━━━━━━━━━━━━━━━\n`;
+                    message += `اسم المستفيد: نواف عادل بن حامد الشامي\n`;
+                    message += `رقم الحساب: 077040010006084740215\n`;
+                    message += `الآيبان: SA5780000859608014740215\n`;
+                    message += `السويفت: RJHISARI\n`;
+                    message += `━━━━━━━━━━━━━━━━\n\n`;
+                    message += `📧 أرسل لنا بيانات الحساب:\n`;
+                    message += `① إيميل الحساب\n`;
+                    message += `② باسورد الحساب\n`;
+                    message += `③ اسمك ثلاثياً\n`;
+                    message += `④ المنصة: ${platform}\n\n`;
+                }
+
+                message += `━━━━━━━━━━━━━━━━\n`;
+                message += `✅ ننتظر منك البيانات عشان نبدأ التنفيذ فوراً!`;
+
+                const finalMessage = message;
+
+                window.open(`https://wa.me/966507642128?text=${encodeURIComponent(finalMessage)}`, '_blank');
+
+                cart = [];
+                updateCartUI();
+                closeCartModal();
+                showNotification('تم إرسال الطلب!', `رقم الطلب #${orderId} - تم الحفظ وسنقوم بالتواصل معك قريباً!`);
+
+                setTimeout(() => {
+                    showNotification('⭐ قيّم تجربتك!', 'نقدر تقييمك لخدمتنا ❤️ اضغط على أيقونة التقييمات بالأسفل وشاركنا رأيك.');
+                }, 3000);
+
             } catch(err) {
                 console.error('❌ executeMockPayment error:', err);
                 showNotification('خطأ!', 'حدث خطأ: ' + err.message, false);
             }
         }
 
-        function forwardToWhatsapp() {
-            window.open(`https://wa.me/966507642128?text=${encodeURIComponent(finalMessage)}`, '_blank');
-            cart = [];
-            updateCartUI();
-            closeCartModal();
-            location.reload();
-        }
-
         // Admin Logic
-        // Simple hash function for password obfuscation
         async function hashString(str) {
             const msgBuffer = new TextEncoder().encode(str);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -1434,28 +1388,31 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        function verifyAdminLogin() {
+        async function verifyAdminLogin() {
             const passcode = document.getElementById('admin-passcode').value;
-            // Simple hash check (SHA-256 via crypto subtle if available)
+            const btn = document.getElementById('admin-login-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = 'جاري التحقق... <i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+            if (!window.crypto || !window.crypto.subtle) {
+                showNotification('خطأ!', 'المتصفح لا يدعم التشفير اللازم.', false);
+                if (btn) { btn.disabled = false; btn.innerHTML = 'تسجيل الدخول ومراقبة المبيعات'; }
+                return;
+            }
+
             const correctHash = 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1';
-            
+
             const doLogin = () => {
                 document.getElementById('admin-login-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
                 ordersList = getOrdersFromLocalStorage();
 
-                // إذا ما في طلبات نضيف طلب تجريبي عشان نشوف الجدول
                 if (ordersList.length === 0) {
                     ordersList.push({
                         orderId: 'VLO-DEMO-000001',
                         clientPhone: '0550000000',
-                        platform: 'Sony PlayStation',
-                        email: 'sony@method.auction',
-                        password: '—',
-                        senderName: 'زبون تجريبي',
+                        platform: 'PlayStation',
                         totalPrice: 70,
                         products: '1. فلوس فورزا 6 سوني (500 مليون بالمزاد) (70 ريال)',
-                        receiptImage: '',
                         status: 'تم التنفيذ والتسليم ✅',
                         timestamp: new Date(Date.now() - 86400000).toISOString()
                     });
@@ -1465,28 +1422,34 @@
                 renderAdminOrdersTable(ordersList);
                 loadAdminReviews();
                 startAdminNotifications();
-                // Sync from Supabase في الخلفية
                 setTimeout(() => loadOrders(), 300);
+                if (btn) { btn.disabled = false; btn.innerHTML = 'تسجيل الدخول ومراقبة المبيعات'; }
             };
 
-            // Check password using simple hash if crypto available
-            if (window.crypto && window.crypto.subtle) {
-                hashString(passcode).then(hashed => {
-                    if (hashed === correctHash) doLogin();
-                    else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
-                }).catch(() => {
-                    if (passcode === 'Aa@0536075882') doLogin();
-                    else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
-                });
-            } else {
-                // Fallback: simple string check if crypto not available
-                if (passcode === 'Aa@0536075882') doLogin();
-                else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
+            const fail = (msg) => {
+                showNotification('خطأ في الرمز السري!', msg, false);
+                if (btn) { btn.disabled = false; btn.innerHTML = 'تسجيل الدخول ومراقبة المبيعات'; }
+            };
+
+            try {
+                const hashed = await hashString(passcode);
+                if (hashed === correctHash) { doLogin(); return; }
+
+                // Try Supabase as backup verification
+                if (supabaseClient) {
+                    const { data } = await supabaseClient.from('admin_config').select('value').eq('key', 'password_hash').single();
+                    if (data && data.value === hashed) { doLogin(); return; }
+                }
+
+                fail('الرمز السري غير صحيح.');
+            } catch(e) {
+                fail('حدث خطأ في التحقق.');
             }
         }
 
         // Delete order
         function deleteOrder(orderId) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا الطلب؟\nلا يمكن التراجع عن هذا الإجراء.')) return;
             ordersList = ordersList.filter(o => o.orderId !== orderId);
             saveOrdersToLocalStorage();
             deleteOrderFromSupabase(orderId);
@@ -1500,12 +1463,8 @@
                 orderId: 'VLO-TEST-' + Date.now(),
                 clientPhone: '0555555555',
                 platform: 'Xbox / PC App',
-                email: 'test@test.com',
-                password: '••••••••',
-                senderName: 'عميل تجريبي',
                 totalPrice: 110,
                 products: '1. تمكيس شامل فورزا 6 [PC & XBOX فقط] (110 ريال)',
-                receiptImage: '',
                 status: 'بانتظار التحقق ⏳',
                 timestamp: new Date().toISOString()
             };
@@ -1586,7 +1545,7 @@
             let pendingCount = 0;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">لا يوجد مبيعات أو طلبات مسجلة بعد!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">لا يوجد مبيعات أو طلبات مسجلة بعد!</td></tr>`;
                 updateDashboardStats(0, 0, 0);
                 return;
             }
@@ -1603,10 +1562,6 @@
                 row.className = 'border-b border-velo-800/40 hover:bg-velo-800/20 admin-order-row';
                 row.setAttribute('data-id', (order.orderId || '').toLowerCase());
                 row.setAttribute('data-phone', order.clientPhone || '');
-                
-                const receiptButtonHTML = order.receiptImage 
-                    ? `<button onclick="viewReceiptImage('${order.orderId}')" class="text-velo-500 hover:underline"><i class="fa-regular fa-image"></i> عرض الإيصال</button>`
-                    : `<span class="text-gray-600">بدون إيصال</span>`;
 
                 row.innerHTML = `
                     <td class="p-3">
@@ -1616,14 +1571,12 @@
                     <td class="p-3 font-semibold text-xs">${escapeHtml(order.platform || '—')}</td>
                     <td class="p-3 text-[10px] max-w-[150px] truncate" title="${escapeHtml(order.products || '')}">${order.products ? order.products.replace(/\n/g, ' • ') : '—'}</td>
                     <td class="p-3 font-black text-white font-mono text-xs">${order.totalPrice || 0} ريال</td>
-                    <td class="p-3 text-[11px]">${escapeHtml(order.senderName || '—')}</td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status && order.status.includes('تم التنفيذ') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}">
                             ${escapeHtml(order.status || 'بانتظار التحقق ⏳')}
                         </span>
                     </td>
                     <td class="p-3 text-center space-x-1 flex items-center justify-center gap-2">
-                        ${receiptButtonHTML}
                         <select onchange="changeOrderStatus('${order.orderId}', this.value)" class="bg-velo-dark border border-velo-700 text-white text-[10px] rounded px-1 py-1 cursor-pointer">
                             <option value="">تغيير الحالة...</option>
                             <option value="تم التنفيذ والتسليم ✅">تم التسليم ✅</option>
@@ -1658,14 +1611,6 @@
             if (profitsEl) profitsEl.innerText = `${profits} ريال`;
             if (totalOrdersEl) totalOrdersEl.innerText = `${total} طلب`;
             if (pendingOrdersEl) pendingOrdersEl.innerText = `${pending} طلب قيد المراجعة`;
-        }
-
-        function viewReceiptImage(orderId) {
-            const order = ordersList.find(o => o.orderId === orderId);
-            if (order && order.receiptImage) {
-                const newWindow = window.open();
-                newWindow.document.write(`<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0f0a1c;"><img src="${order.receiptImage}" style="max-width:90%;max-height:90%;border-radius:12px;box-shadow:0 0 20px rgba(0,0,0,0.5);" /></div>`);
-            }
         }
 
         function changeOrderStatus(orderId, newStatus) {
@@ -1817,6 +1762,7 @@
         }
 
         function deleteReview(id) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذا التقييم؟')) return;
             adminReviewsList = adminReviewsList.filter(r => r.id !== id);
             saveReviewsToLocalStorage();
             deleteReviewFromSupabase(id);
@@ -1840,6 +1786,8 @@
                 return;
             }
 
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = 'جاري الإرسال... <i class="fa-solid fa-spinner fa-spin"></i>'; }
+
             const reviewPayload = {
                 id: 'REV-' + Date.now(),
                 name: name,
@@ -1858,6 +1806,7 @@
             commentInput.value = "";
             setReviewRating(5);
             loadDynamicReviews();
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = 'إرسال التقييم السحابي مباشرة <i class="fa-solid fa-paper-plane mr-1"></i>'; }
         }
 
         async function loadDynamicReviews() {
@@ -1954,7 +1903,6 @@
                         <div class="flex justify-between"><span class="text-gray-400">تاريخ الطلب:</span><span class="text-white">${dateStr}</span></div>
                         <div class="flex justify-between"><span class="text-gray-400">المبلغ:</span><span class="font-bold text-white">${order.totalPrice} ريال</span></div>
                         <div class="flex justify-between"><span class="text-gray-400">المنصة:</span><span class="text-white">${escapeHtml(order.platform)}</span></div>
-                        <div class="flex justify-between"><span class="text-gray-400">صاحب الطلب:</span><span class="text-white">${escapeHtml(order.senderName || '—')}</span></div>
                         <div class="flex justify-between"><span class="text-gray-400">رقم التواصل:</span><span class="text-white">${escapeHtml(order.clientPhone || '—')}</span></div>
                         <div class="flex justify-between items-center border-t border-velo-800 pt-2 mt-2">
                             <span class="text-gray-400 font-bold">حالة الطلب:</span>
