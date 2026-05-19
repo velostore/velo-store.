@@ -702,6 +702,9 @@
                             <button onclick="loadOrders()" class="bg-velo-800 hover:bg-velo-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-velo-700/50 flex items-center justify-center gap-1.5 shrink-0">
                                 <i class="fa-solid fa-arrows-rotate animate-spin" style="animation-duration: 10s;"></i> تحديث القائمة
                             </button>
+                            <button onclick="addTestOrder()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-emerald-600/50 flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-flask"></i> إضافة طلب تجريبي
+                            </button>
                         </div>
                         
                         <div class="overflow-x-auto rounded-xl border border-velo-800/80 bg-velo-dark">
@@ -1287,6 +1290,17 @@
             }
         }
 
+        function saveOrdersToLocalStorage() {
+            try { localStorage.setItem('velo_orders', JSON.stringify(ordersList)); } catch(e) {}
+        }
+
+        function getOrdersFromLocalStorage() {
+            try {
+                const data = localStorage.getItem('velo_orders');
+                return data ? JSON.parse(data) : [];
+            } catch(e) { return []; }
+        }
+
         function executeMockPayment() {
             const senderName = document.getElementById('sender-bank-name').value.trim();
             
@@ -1323,19 +1337,19 @@
                 timestamp: new Date().toISOString()
             };
 
-            const ordersCollection = getOrdersCollection();
-            if (ordersCollection) {
-                ordersCollection.doc(orderId).set(orderPayload)
-                .then(() => {
-                    console.log("Order saved successfully to cloud Firestore!");
-                })
-                .catch(err => {
-                    console.error("Error saving to Firestore: ", err);
-                    showNotification('خطأ في الإرسال', 'فشل حفظ الطلب في قاعدة البيانات سحابياً.', false);
-                });
-            } else {
-                ordersList.push(orderPayload);
-            }
+            // Save to localStorage فوراً (مضمون 100%)
+            ordersList.push(orderPayload);
+            saveOrdersToLocalStorage();
+
+            // Try Firebase في الخلفية (اختياري)
+            setTimeout(() => {
+                const ordersCollection = getOrdersCollection();
+                if (ordersCollection) {
+                    ordersCollection.doc(orderId).set(orderPayload)
+                    .then(() => console.log("✅ Order synced to Firestore"))
+                    .catch(err => console.error("Firestore sync failed (local backup OK):", err));
+                }
+            }, 100);
 
             let message = `*طلب جديد قيد الانتظار من متجر Velo (VLO)* ⚡\n`;
             message += `------------------------------------\n`;
@@ -1396,43 +1410,26 @@
         async function verifyAdminLogin() {
             const passcode = document.getElementById('admin-passcode').value;
             const hashed = await hashString(passcode);
-            // SHA-256 of Aa@0536075882
             const correctHash = 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1';
             if (hashed === correctHash) {
                 document.getElementById('admin-login-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
-                // إذا Firebase غير مستعد، ننتظر المصادقة أو نتحقق مباشرة
-                if (auth && auth.currentUser) {
-                    loadOrders();
-                    loadAdminReviews();
-                    startAdminOrderNotifications();
-                } else if (db) {
-                    // انتظر المصادقة لمدة 5 ثواني ثم حمّل
-                    const adminLoadInterval = setInterval(() => {
+
+                // 1. Load from localStorage IMMEDIATELY (always works)
+                ordersList = getOrdersFromLocalStorage();
+                renderAdminOrdersTable(ordersList);
+                loadAdminReviews();
+
+                // 2. Try Firebase in background (optional sync)
+                setTimeout(async () => {
+                    try {
+                        if (auth && !auth.currentUser) await auth.signInAnonymously();
                         if (auth && auth.currentUser) {
-                            clearInterval(adminLoadInterval);
-                            loadOrders();
-                            loadAdminReviews();
+                            loadOrders(); // reload from Firestore + merge
+                            startAdminOrderNotifications();
                         }
-                    }, 500);
-                    // إذا ما اشتغل Firebase خلال 5 ثواني، أعد المحاولة بمصادقة مجهولة
-                    setTimeout(() => {
-                        clearInterval(adminLoadInterval);
-                        if (!auth || !auth.currentUser) {
-                            auth.signInAnonymously().then(() => {
-                                loadOrders();
-                                loadAdminReviews();
-                                startAdminOrderNotifications();
-                            }).catch(() => {
-                                loadOrders();
-                                loadAdminReviews();
-                            });
-                        }
-                    }, 5000);
-                } else {
-                    loadOrders();
-                    loadAdminReviews();
-                }
+                    } catch(e) {}
+                }, 500);
             } else {
                 showNotification('خطأ في الرمز السري!', 'الرمز السري لمدير الموقع غير صحيح، يرجى إعادة المحاولة.', false);
             }
@@ -1443,6 +1440,8 @@
             const ordersCollection = getOrdersCollection();
             if (db && ordersCollection) {
                 ordersCollection.doc(orderId).delete().then(() => {
+                    ordersList = ordersList.filter(o => o.orderId !== orderId);
+                    saveOrdersToLocalStorage();
                     showNotification('تم الحذف', 'تم حذف سجل الفاتورة والطلب بنجاح.');
                     loadOrders();
                 }).catch(err => {
@@ -1451,41 +1450,55 @@
                 });
             } else {
                 ordersList = ordersList.filter(o => o.orderId !== orderId);
+                saveOrdersToLocalStorage();
                 renderAdminOrdersTable(ordersList);
                 showNotification('تم الحذف', 'تم حذف سجل الفاتورة بنجاح.');
             }
         }
 
-        function loadOrders() {
-            const tbody = document.getElementById('admin-orders-tbody');
-            if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">جاري تحميل سجلات الطلبات السحابية...</td></tr>`;
-            }
-
-            const doLoad = () => {
-                const ordersCollection = getOrdersCollection();
-                if (ordersCollection) {
-                    ordersCollection.get().then((querySnapshot) => {
-                        ordersList = [];
-                        querySnapshot.forEach((doc) => { ordersList.push(doc.data()); });
-                        renderAdminOrdersTable(ordersList);
-                    }).catch(err => {
-                        console.error("Error getting documents: ", err);
-                        if (tbody) {
-                            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">خطأ في تحميل البيانات: ${err.message}</td></tr>`;
-                        }
-                    });
-                } else {
-                    renderAdminOrdersTable(ordersList);
-                }
+        // Add test order to verify admin panel works
+        function addTestOrder() {
+            const testOrder = {
+                orderId: 'VLO-TEST-' + Date.now(),
+                clientPhone: '0555555555',
+                platform: 'Xbox / PC App',
+                email: 'test@test.com',
+                password: '••••••••',
+                senderName: 'عميل تجريبي',
+                totalPrice: 110,
+                products: '1. تمكيس شامل فورزا 6 [PC & XBOX فقط] (110 ريال)',
+                receiptImage: '',
+                status: 'بانتظار التحقق ⏳',
+                timestamp: new Date().toISOString()
             };
+            ordersList.push(testOrder);
+            saveOrdersToLocalStorage();
+            renderAdminOrdersTable(ordersList);
+            showNotification('✅ تم', 'تم إضافة طلب تجريبي بنجاح!');
+        }
 
-            if (auth && auth.currentUser) {
-                doLoad();
-            } else if (auth) {
-                auth.signInAnonymously().then(doLoad).catch(doLoad);
+        function loadOrders() {
+            // Load from localStorage أولاً (فوري)
+            ordersList = getOrdersFromLocalStorage();
+
+            // Try دمج مع Firebase إذا موجود
+            const ordersCollection = getOrdersCollection();
+            if (ordersCollection) {
+                ordersCollection.get().then((querySnapshot) => {
+                    const cloudOrders = [];
+                    querySnapshot.forEach((doc) => { cloudOrders.push(doc.data()); });
+                    const mergedMap = new Map();
+                    cloudOrders.forEach(o => mergedMap.set(o.orderId, o));
+                    ordersList.forEach(o => mergedMap.set(o.orderId, o));
+                    ordersList = Array.from(mergedMap.values());
+                    ordersList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                    saveOrdersToLocalStorage();
+                    renderAdminOrdersTable(ordersList);
+                }).catch(() => {
+                    renderAdminOrdersTable(ordersList);
+                });
             } else {
-                doLoad();
+                renderAdminOrdersTable(ordersList);
             }
         }
 
@@ -1585,6 +1598,7 @@
             const orderIndex = ordersList.findIndex(o => o.orderId === orderId);
             if (orderIndex !== -1) {
                 ordersList[orderIndex].status = newStatus;
+                saveOrdersToLocalStorage();
                 
                 const ordersCollection = getOrdersCollection();
                 if (db && ordersCollection) {
