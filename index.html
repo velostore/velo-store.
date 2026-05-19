@@ -11,11 +11,6 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs (Compat versions to prevent global script loading errors) -->
-    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -703,8 +698,15 @@
                                 <i class="fa-solid fa-arrows-rotate animate-spin" style="animation-duration: 10s;"></i> تحديث القائمة
                             </button>
                             <button onclick="addTestOrder()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-emerald-600/50 flex items-center justify-center gap-1.5 shrink-0">
-                                <i class="fa-solid fa-flask"></i> إضافة طلب تجريبي
+                                <i class="fa-solid fa-flask"></i> طلب تجريبي
                             </button>
+                            <button onclick="exportOrders()" class="bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-blue-600/50 flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-download"></i> تصدير
+                            </button>
+                            <button onclick="document.getElementById('import-file-input').click()" class="bg-amber-700 hover:bg-amber-600 text-white text-xs font-semibold px-4 py-2 rounded-lg border border-amber-600/50 flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-upload"></i> استيراد
+                            </button>
+                            <input type="file" id="import-file-input" accept=".json" onchange="importOrders(event)" class="hidden">
                         </div>
                         
                         <div class="overflow-x-auto rounded-xl border border-velo-800/80 bg-velo-dark">
@@ -821,110 +823,26 @@
         let ordersList = []; // Array of retrieved orders from DB
         let userReviewRating = 5; // Global state for star selector
 
-        // Firebase Configurations (With active fallback to secure memory states)
-        let firebaseConfig = {
-            apiKey: "AIzaSyBPK6tBaGGnNNd-SftX6ACB8CIpo4HaKU",
-            authDomain: "velo-store-a8af9.firebaseapp.com",
-            projectId: "velo-store-a8af9",
-            storageBucket: "velo-store-a8af9.appspot.com",
-            messagingSenderId: "1027910499343",
-            appId: "1:1027910499343:web:8d5d4fe9b94749ca71377a",
-            measurementId: "G-2KVPZ4QYQZ"
-        };
-
-        // Override with sandbox variables if provided dynamically
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-            try {
-                firebaseConfig = JSON.parse(__firebase_config);
-            } catch (e) {
-                console.error("Error parsing Dynamic config:", e);
-            }
-        }
-
-        let db = null;
-        let auth = null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'velo-store-a8af9';
-
-        // Helper to get structured Firestore path that complies strictly with Rule 1
-        function getOrdersCollection() {
-            if (!db) return null;
-            return db.collection('artifacts').doc(appId).collection('public').doc('data').collection('orders');
-        }
-
-        // Helper for reviews collection matching Rule 1
-        function getReviewsCollection() {
-            if (!db) return null;
-            return db.collection('artifacts').doc(appId).collection('public').doc('data').collection('reviews');
-        }
-
-        // Initialize Firebase safely inside the compat architecture
-        try {
-            const app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth(app);
-            db = firebase.firestore(app);
-            
-            // Safe Auth Listener (Rule 3)
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    console.log("Firebase Authenticated successfully as ID:", user.uid);
-                    // Load dynamic reviews on successful auth
-                    loadDynamicReviews();
-                } else {
-                    // Fast anonymous authentication to fulfill DB rules
-                    const initAuth = async () => {
-                        try {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await auth.signInWithCustomToken(__initial_auth_token);
-                            } else {
-                                await auth.signInAnonymously();
-                            }
-                        } catch (err) {
-                            console.error("Auth initialization warning:", err);
-                        }
-                    };
-                    initAuth();
-                }
-            });
-        } catch (e) {
-            console.error("Firebase compat failed to initialize. Reverting to fallback session-memory storage.", e);
-        }
-
         window.onload = function() {
             updateCartUI();
             renderProductsGrid();
+            loadDynamicReviews();
         }
 
-        // Real-time order notifications for admin (runs after admin login)
-        let adminOrderListener = null;
-        let knownOrderIds = new Set();
+        // Real-time check for new orders (every 5 seconds)
+        let lastOrderCount = 0;
 
-        function startAdminOrderNotifications() {
-            if (adminOrderListener) return; // already listening
-            const ordersCollection = getOrdersCollection();
-            if (!ordersCollection) return;
-
-            // First load to populate known IDs
-            ordersCollection.get().then(snap => {
-                snap.forEach(doc => knownOrderIds.add(doc.id));
-
-                // Now listen for real-time changes
-                adminOrderListener = ordersCollection.onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added' && !knownOrderIds.has(change.doc.id)) {
-                            knownOrderIds.add(change.doc.id);
-                            const order = change.doc.data();
-                            // Play sound and show notification
-                            playNotificationSound();
-                            showNotification(
-                                '🔔 طلب جديد وصل!',
-                                `رقم الطلب: ${order.orderId} | المبلغ: ${order.totalPrice} ريال | ${order.clientPhone}`
-                            );
-                            // Reload orders table
-                            loadOrders();
-                        }
-                    });
-                });
-            }).catch(() => {});
+        function startAdminNotifications() {
+            lastOrderCount = ordersList.length;
+            setInterval(() => {
+                const current = getOrdersFromLocalStorage().length;
+                if (current > lastOrderCount) {
+                    lastOrderCount = current;
+                    playNotificationSound();
+                    showNotification('🔔 طلب جديد وصل!', `لديك طلب جديد في لوحة الإدارة!`);
+                    loadOrders();
+                }
+            }, 5000);
         }
 
         function playNotificationSound() {
@@ -1337,19 +1255,9 @@
                 timestamp: new Date().toISOString()
             };
 
-            // Save to localStorage فوراً (مضمون 100%)
+            // Save to localStorage (مضمون 100% بدون Firebase)
             ordersList.push(orderPayload);
             saveOrdersToLocalStorage();
-
-            // Try Firebase في الخلفية (اختياري)
-            setTimeout(() => {
-                const ordersCollection = getOrdersCollection();
-                if (ordersCollection) {
-                    ordersCollection.doc(orderId).set(orderPayload)
-                    .then(() => console.log("✅ Order synced to Firestore"))
-                    .catch(err => console.error("Firestore sync failed (local backup OK):", err));
-                }
-            }, 100);
 
             let message = `*طلب جديد قيد الانتظار من متجر Velo (VLO)* ⚡\n`;
             message += `------------------------------------\n`;
@@ -1407,53 +1315,39 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        async function verifyAdminLogin() {
+        function verifyAdminLogin() {
             const passcode = document.getElementById('admin-passcode').value;
-            const hashed = await hashString(passcode);
+            // Simple hash check (SHA-256 via crypto subtle if available)
             const correctHash = 'c95ed03a701312646413de813886b2fcb35c3d61c965e639271376c6023178c1';
-            if (hashed === correctHash) {
+            
+            const doLogin = () => {
                 document.getElementById('admin-login-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
-
-                // 1. Load from localStorage IMMEDIATELY (always works)
                 ordersList = getOrdersFromLocalStorage();
                 renderAdminOrdersTable(ordersList);
                 loadAdminReviews();
+                startAdminNotifications();
+            };
 
-                // 2. Try Firebase in background (optional sync)
-                setTimeout(async () => {
-                    try {
-                        if (auth && !auth.currentUser) await auth.signInAnonymously();
-                        if (auth && auth.currentUser) {
-                            loadOrders(); // reload from Firestore + merge
-                            startAdminOrderNotifications();
-                        }
-                    } catch(e) {}
-                }, 500);
+            // Check password using simple hash if crypto available
+            if (window.crypto && window.crypto.subtle) {
+                hashString(passcode).then(hashed => {
+                    if (hashed === correctHash) doLogin();
+                    else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
+                });
             } else {
-                showNotification('خطأ في الرمز السري!', 'الرمز السري لمدير الموقع غير صحيح، يرجى إعادة المحاولة.', false);
+                // Fallback: simple string check if crypto not available
+                if (passcode === 'Aa@0536075882') doLogin();
+                else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
             }
         }
 
-        // Delete order from database
+        // Delete order from localStorage
         function deleteOrder(orderId) {
-            const ordersCollection = getOrdersCollection();
-            if (db && ordersCollection) {
-                ordersCollection.doc(orderId).delete().then(() => {
-                    ordersList = ordersList.filter(o => o.orderId !== orderId);
-                    saveOrdersToLocalStorage();
-                    showNotification('تم الحذف', 'تم حذف سجل الفاتورة والطلب بنجاح.');
-                    loadOrders();
-                }).catch(err => {
-                    console.error("Error deleting order: ", err);
-                    showNotification('خطأ!', 'فشل حذف الطلب من السحابة.', false);
-                });
-            } else {
-                ordersList = ordersList.filter(o => o.orderId !== orderId);
-                saveOrdersToLocalStorage();
-                renderAdminOrdersTable(ordersList);
-                showNotification('تم الحذف', 'تم حذف سجل الفاتورة بنجاح.');
-            }
+            ordersList = ordersList.filter(o => o.orderId !== orderId);
+            saveOrdersToLocalStorage();
+            renderAdminOrdersTable(ordersList);
+            showNotification('تم الحذف', 'تم حذف الطلب بنجاح.');
         }
 
         // Add test order to verify admin panel works
@@ -1477,29 +1371,52 @@
             showNotification('✅ تم', 'تم إضافة طلب تجريبي بنجاح!');
         }
 
-        function loadOrders() {
-            // Load from localStorage أولاً (فوري)
-            ordersList = getOrdersFromLocalStorage();
+        // Export all orders as JSON file
+        function exportOrders() {
+            const data = getOrdersFromLocalStorage();
+            if (data.length === 0) {
+                showNotification('لا يوجد طلبات!', 'لا يوجد طلبات لتصديرها.', false);
+                return;
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'velo-orders-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('✅ تم التصدير', 'تم تصدير الطلبات كملفحفظ.');
+        }
 
-            // Try دمج مع Firebase إذا موجود
-            const ordersCollection = getOrdersCollection();
-            if (ordersCollection) {
-                ordersCollection.get().then((querySnapshot) => {
-                    const cloudOrders = [];
-                    querySnapshot.forEach((doc) => { cloudOrders.push(doc.data()); });
+        // Import orders from JSON file
+        function importOrders(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) throw new Error('Invalid format');
+                    const existing = getOrdersFromLocalStorage();
                     const mergedMap = new Map();
-                    cloudOrders.forEach(o => mergedMap.set(o.orderId, o));
-                    ordersList.forEach(o => mergedMap.set(o.orderId, o));
+                    existing.forEach(o => mergedMap.set(o.orderId, o));
+                    imported.forEach(o => mergedMap.set(o.orderId, o));
                     ordersList = Array.from(mergedMap.values());
                     ordersList.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                     saveOrdersToLocalStorage();
                     renderAdminOrdersTable(ordersList);
-                }).catch(() => {
-                    renderAdminOrdersTable(ordersList);
-                });
-            } else {
-                renderAdminOrdersTable(ordersList);
-            }
+                    showNotification('✅ تم الاستيراد', `تم استيراد ${imported.length} طلب بنجاح!`);
+                } catch(err) {
+                    showNotification('خطأ!', 'الملف غير صحيح.', false);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function loadOrders() {
+            ordersList = getOrdersFromLocalStorage();
+            renderAdminOrdersTable(ordersList);
         }
 
         function renderAdminOrdersTable(data) {
@@ -1599,24 +1516,8 @@
             if (orderIndex !== -1) {
                 ordersList[orderIndex].status = newStatus;
                 saveOrdersToLocalStorage();
-                
-                const ordersCollection = getOrdersCollection();
-                if (db && ordersCollection) {
-                    ordersCollection.doc(orderId).update({ status: newStatus })
-                    .then(() => {
-                        if (newStatus.includes('تم التنفيذ')) {
-                            showNotification('نجاح!', `تم تغيير حالة طلب العميل ${orderId} إلى تم التسليم!`);
-                        } else {
-                            showNotification('تم التحديث', `تم تغيير حالة الطلب إلى: ${newStatus}`);
-                        }
-                        loadOrders();
-                    }).catch(err => {
-                        console.error("Error updating order status: ", err);
-                        showNotification('خطأ!', 'فشل تحديث حالة الطلب.', false);
-                    });
-                } else {
-                    renderAdminOrdersTable(ordersList);
-                }
+                renderAdminOrdersTable(ordersList);
+                showNotification('تم التحديث', `تم تغيير حالة الطلب إلى: ${newStatus}`);
             }
         }
 
@@ -1697,24 +1598,23 @@
         // ==========================================
         let adminReviewsList = [];
 
+        // ========== REVIEWS (localStorage) ==========
+        function saveReviewsToLocalStorage() {
+            try { localStorage.setItem('velo_reviews', JSON.stringify(adminReviewsList)); } catch(e) {}
+        }
+
+        function getReviewsFromLocalStorage() {
+            try {
+                const data = localStorage.getItem('velo_reviews');
+                return data ? JSON.parse(data) : [];
+            } catch(e) { return []; }
+        }
+
         function loadAdminReviews() {
             const container = document.getElementById('admin-reviews-list');
             if (!container) return;
-            container.innerHTML = `<p class="text-center text-gray-400 text-xs py-6"><i class="fa-solid fa-spinner animate-spin ml-2"></i> جاري تحميل التقييمات...</p>`;
-
-            const reviewsCollection = getReviewsCollection();
-            if (reviewsCollection) {
-                reviewsCollection.get().then((snap) => {
-                    adminReviewsList = [];
-                    snap.forEach((doc) => adminReviewsList.push({ docId: doc.id, ...doc.data() }));
-                    adminReviewsList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    renderAdminReviews();
-                }).catch(err => {
-                    container.innerHTML = `<p class="text-center text-red-500 text-xs py-4">فشل تحميل التقييمات: ${err.message}</p>`;
-                });
-            } else {
-                container.innerHTML = `<p class="text-center text-gray-500 text-xs py-4">قاعدة البيانات غير متوفرة.</p>`;
-            }
+            adminReviewsList = getReviewsFromLocalStorage();
+            renderAdminReviews();
         }
 
         function renderAdminReviews() {
@@ -1738,29 +1638,22 @@
                         <div class="flex gap-0.5 text-[11px]">${stars}</div>
                         <p class="text-xs text-gray-300 leading-relaxed">"${escapeHtml(rev.comment)}"</p>
                     </div>
-                    <button onclick="deleteReview('${rev.docId}')" class="text-red-500 hover:text-red-400 p-2 text-sm shrink-0" title="حذف التقييم">
+                    <button onclick="deleteReview('${rev.id}')" class="text-red-500 hover:text-red-400 p-2 text-sm shrink-0" title="حذف التقييم">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>`;
             }).join('');
         }
 
-        function deleteReview(docId) {
-            const reviewsCollection = getReviewsCollection();
-            if (db && reviewsCollection) {
-                reviewsCollection.doc(docId).delete().then(() => {
-                    showNotification('تم الحذف ✅', 'تم حذف التقييم بنجاح من قاعدة البيانات.');
-                    loadAdminReviews();
-                    loadDynamicReviews();
-                }).catch(err => {
-                    showNotification('خطأ!', 'فشل حذف التقييم: ' + err.message, false);
-                });
-            } else {
-                showNotification('خطأ!', 'قاعدة البيانات غير متوفرة.', false);
-            }
+        function deleteReview(id) {
+            adminReviewsList = adminReviewsList.filter(r => r.id !== id);
+            saveReviewsToLocalStorage();
+            loadAdminReviews();
+            loadDynamicReviews();
+            showNotification('تم الحذف ✅', 'تم حذف التقييم بنجاح.');
         }
 
-        async function submitUserReview() {
+        function submitUserReview() {
             const nameInput = document.getElementById('review-user-name');
             const commentInput = document.getElementById('review-user-comment');
             const submitBtn = document.getElementById('review-submit-btn');
@@ -1775,14 +1668,6 @@
                 return;
             }
 
-            // Wait briefly for auth if not ready yet
-            if (auth && !auth.currentUser) {
-                try { await auth.signInAnonymously(); } catch(e) {}
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = "جاري إرسال تقييمك السحابي... ⏳";
-
             const reviewPayload = {
                 id: 'REV-' + Date.now(),
                 name: name,
@@ -1791,60 +1676,24 @@
                 timestamp: new Date().toISOString()
             };
 
-            const reviewsCollection = getReviewsCollection();
-            if (reviewsCollection) {
-                reviewsCollection.add(reviewPayload)
-                .then(() => {
-                    showNotification('تم الإرسال بنجاح! ⭐', 'شكراً لك على تقييمك ودعمك المستمر لمتجر ڤيلو!');
-                    nameInput.value = "";
-                    commentInput.value = "";
-                    setReviewRating(5);
-                    loadDynamicReviews(); // Reload list dynamically
-                })
-                .catch(err => {
-                    console.error("Error sending review: ", err);
-                    showNotification('فشل الإرسال', 'حدث خطأ أثناء حفظ تقييمك في السحابة.', false);
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "إرسال التقييم السحابي مباشرة 🚀";
-                });
-            } else {
-                showNotification('خطأ في النظام', 'قاعدة البيانات السحابية غير متوفرة حالياً.', false);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "إرسال التقييم السحابي مباشرة 🚀";
-            }
+            adminReviewsList = getReviewsFromLocalStorage();
+            adminReviewsList.unshift(reviewPayload);
+            saveReviewsToLocalStorage();
+
+            showNotification('تم الإرسال بنجاح! ⭐', 'شكراً لك على تقييمك ودعمك المستمر لمتجر ڤيلو!');
+            nameInput.value = "";
+            commentInput.value = "";
+            setReviewRating(5);
+            loadDynamicReviews();
         }
 
         function loadDynamicReviews() {
             const container = document.getElementById('dynamic-reviews-container');
             if (!container) return;
 
-            container.innerHTML = `<div class="col-span-full text-center py-6 text-gray-500"><i class="fa-solid fa-spinner animate-spin text-xl text-velo-500 block mb-2"></i> جاري تحميل تقييمات الزبائن الحقيقية من السحابة...</div>`;
-
-            const reviewsCollection = getReviewsCollection();
-            if (reviewsCollection) {
-                reviewsCollection.get().then((querySnapshot) => {
-                    let reviews = [];
-                    querySnapshot.forEach((doc) => {
-                        reviews.push(doc.data());
-                    });
-
-                    // Sort locally by timestamp descending (Rule 2 Compound query guard)
-                    reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-                    renderReviewsUI(reviews);
-                }).catch(err => {
-                    console.error("Error loading reviews: ", err);
-                    container.innerHTML = `<div class="col-span-full text-center py-6 text-red-500">فشل في تحميل التقييمات السحابية.</div>`;
-                });
-            } else {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-8 space-y-2">
-                        <i class="fa-solid fa-heart-broken text-velo-800 text-3xl"></i>
-                        <p class="text-xs text-gray-500">لا توجد تقييمات بعد. كن أول من يشاركنا تجربته الأسطورية! ✨</p>
-                    </div>`;
-            }
+            const reviews = getReviewsFromLocalStorage();
+            reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderReviewsUI(reviews);
         }
 
         function renderReviewsUI(reviews) {
@@ -1895,7 +1744,7 @@
             }).join('');
         }
 
-        // Order tracking function for customers
+        // Order tracking function for customers (localStorage)
         function trackOrder() {
             const input = document.getElementById('track-order-input');
             const resultDiv = document.getElementById('track-result');
@@ -1907,44 +1756,30 @@
             }
 
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = `<p class="text-center text-gray-400 text-xs"><i class="fa-solid fa-spinner animate-spin ml-2"></i> جاري البحث عن طلبك...</p>`;
 
-            const ordersCollection = getOrdersCollection();
-            if (ordersCollection) {
-                ordersCollection.doc(orderId).get().then(doc => {
-                    if (doc.exists) {
-                        const order = doc.data();
-                        const statusColor = order.status && order.status.includes('تم التنفيذ') ? 'text-emerald-500' :
-                                           order.status && order.status.includes('مرفوض') ? 'text-red-500' :
-                                           order.status && order.status.includes('قيد التنفيذ') ? 'text-blue-400' : 'text-amber-500';
-                        const dateStr = order.timestamp ? new Date(order.timestamp).toLocaleDateString('ar-SA') : '—';
-                        resultDiv.innerHTML = `
-                            <div class="space-y-2 text-xs">
-                                <div class="flex justify-between"><span class="text-gray-400">رقم الطلب:</span><span class="font-mono font-bold text-white">${escapeHtml(order.orderId)}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">تاريخ الطلب:</span><span class="text-white">${dateStr}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">المبلغ:</span><span class="font-bold text-white">${order.totalPrice} ريال</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">المنصة:</span><span class="text-white">${escapeHtml(order.platform)}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">صاحب الطلب:</span><span class="text-white">${escapeHtml(order.senderName || '—')}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">رقم التواصل:</span><span class="text-white">${escapeHtml(order.clientPhone || '—')}</span></div>
-                                <div class="flex justify-between items-center border-t border-velo-800 pt-2 mt-2">
-                                    <span class="text-gray-400 font-bold">حالة الطلب:</span>
-                                    <span class="font-black ${statusColor}">${escapeHtml(order.status || 'بانتظار التحقق ⏳')}</span>
-                                </div>
-                            </div>`;
-                    } else {
-                        resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2"><i class="fa-solid fa-circle-xmark ml-1"></i> لم يتم العثور على هذا الرقم. تأكد من الرقم وحاول مجدداً.</p>`;
-                    }
-                }).catch(err => {
-                    resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2">خطأ في الاتصال بقاعدة البيانات.</p>`;
-                });
+            const allOrders = getOrdersFromLocalStorage();
+            const order = allOrders.find(o => o.orderId === orderId);
+            
+            if (order) {
+                const statusColor = order.status && order.status.includes('تم التنفيذ') ? 'text-emerald-500' :
+                                   order.status && order.status.includes('مرفوض') ? 'text-red-500' :
+                                   order.status && order.status.includes('قيد التنفيذ') ? 'text-blue-400' : 'text-amber-500';
+                const dateStr = order.timestamp ? new Date(order.timestamp).toLocaleDateString('ar-SA') : '—';
+                resultDiv.innerHTML = `
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between"><span class="text-gray-400">رقم الطلب:</span><span class="font-mono font-bold text-white">${escapeHtml(order.orderId)}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">تاريخ الطلب:</span><span class="text-white">${dateStr}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">المبلغ:</span><span class="font-bold text-white">${order.totalPrice} ريال</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">المنصة:</span><span class="text-white">${escapeHtml(order.platform)}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">صاحب الطلب:</span><span class="text-white">${escapeHtml(order.senderName || '—')}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">رقم التواصل:</span><span class="text-white">${escapeHtml(order.clientPhone || '—')}</span></div>
+                        <div class="flex justify-between items-center border-t border-velo-800 pt-2 mt-2">
+                            <span class="text-gray-400 font-bold">حالة الطلب:</span>
+                            <span class="font-black ${statusColor}">${escapeHtml(order.status || 'بانتظار التحقق ⏳')}</span>
+                        </div>
+                    </div>`;
             } else {
-                // fallback local
-                const order = ordersList.find(o => o.orderId === orderId);
-                if (order) {
-                    resultDiv.innerHTML = `<p class="text-center text-emerald-400 text-xs py-2">حالة طلبك: ${escapeHtml(order.status)}</p>`;
-                } else {
-                    resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2">لم يتم العثور على الطلب.</p>`;
-                }
+                resultDiv.innerHTML = `<p class="text-center text-red-400 text-xs py-2"><i class="fa-solid fa-circle-xmark ml-1"></i> لم يتم العثور على هذا الرقم.</p>`;
             }
         }
 
