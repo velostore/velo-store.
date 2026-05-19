@@ -813,7 +813,52 @@
     </footer>
 
     <!-- JS Logic Block -->
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        /* 
+         * ======== إعداد Supabase ========
+         * لإعداد قاعدة البيانات:
+         * 1. روح supabase.com → Create project
+         * 2. SQL Editor → New Query → الصق هذا الكود:
+         *
+         * CREATE TABLE orders (
+         *   "orderId" TEXT PRIMARY KEY,
+         *   "clientPhone" TEXT,
+         *   "platform" TEXT,
+         *   "email" TEXT,
+         *   "password" TEXT,
+         *   "senderName" TEXT,
+         *   "totalPrice" NUMERIC,
+         *   "products" TEXT,
+         *   "receiptImage" TEXT,
+         *   "status" TEXT DEFAULT 'بانتظار التحقق ⏳',
+         *   "timestamp" TEXT,
+         *   "created_at" TIMESTAMPTZ DEFAULT NOW()
+         * );
+         * CREATE TABLE reviews (
+         *   "id" TEXT PRIMARY KEY,
+         *   "name" TEXT,
+         *   "rating" INTEGER,
+         *   "comment" TEXT,
+         *   "timestamp" TEXT,
+         *   "created_at" TIMESTAMPTZ DEFAULT NOW()
+         * );
+         *
+         * 3. Project Settings → API → انسخ URL و anon key
+         * 4. حطهم تحت ↓
+         */
+        const SUPABASE_URL = 'https://mrjhvoqtvcljgqoabibz.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_eapQOjLaO4ME5IAQWvOuqQ_MKS6CFwL';
+        
+        let supabaseClient = null;
+        try {
+            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase connected ✅');
+            }
+        } catch(e) { console.log('Supabase not configured, using localStorage only'); }
+
         // State variables
         let selectedF6SonyOption = null;
         let selectedF5SonyOption = null;
@@ -827,6 +872,15 @@
             updateCartUI();
             renderProductsGrid();
             loadDynamicReviews();
+            // Test localStorage
+            try {
+                localStorage.setItem('velo_test', 'ok');
+                const test = localStorage.getItem('velo_test');
+                console.log('localStorage test:', test === 'ok' ? '✅ يعمل' : '❌ لا يعمل');
+                localStorage.removeItem('velo_test');
+            } catch(e) {
+                console.error('localStorage غير متاح:', e);
+            }
         }
 
         // Real-time check for new orders (every 5 seconds)
@@ -1219,7 +1273,63 @@
             } catch(e) { return []; }
         }
 
+        // ======== Supabase Sync ========
+        async function syncOrderToSupabase(orderPayload) {
+            if (!supabaseClient) return;
+            try {
+                const { error } = await supabaseClient.from('orders').upsert(orderPayload, { onConflict: 'orderId' });
+                if (error) console.warn('Supabase save warning:', error.message);
+            } catch(e) { console.warn('Supabase sync failed:', e); }
+        }
+
+        async function loadOrdersFromSupabase() {
+            if (!supabaseClient) return null;
+            try {
+                const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                return data || [];
+            } catch(e) { console.warn('Supabase load failed:', e); return null; }
+        }
+
+        async function deleteOrderFromSupabase(orderId) {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.from('orders').delete().eq('orderId', orderId);
+            } catch(e) {}
+        }
+
+        async function updateOrderStatusInSupabase(orderId, status) {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.from('orders').update({ status }).eq('orderId', orderId);
+            } catch(e) {}
+        }
+
+        async function syncReviewToSupabase(review) {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.from('reviews').upsert(review, { onConflict: 'id' });
+            } catch(e) {}
+        }
+
+        async function loadReviewsFromSupabase() {
+            if (!supabaseClient) return null;
+            try {
+                const { data, error } = await supabaseClient.from('reviews').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                return data || [];
+            } catch(e) { return null; }
+        }
+
+        async function deleteReviewFromSupabase(id) {
+            if (!supabaseClient) return;
+            try {
+                await supabaseClient.from('reviews').delete().eq('id', id);
+            } catch(e) {}
+        }
+
         function executeMockPayment() {
+            try {
             const senderName = document.getElementById('sender-bank-name').value.trim();
             
             if (!senderName) {
@@ -1255,9 +1365,12 @@
                 timestamp: new Date().toISOString()
             };
 
-            // Save to localStorage (مضمون 100% بدون Firebase)
+            // Save to localStorage (مضمون)
             ordersList.push(orderPayload);
             saveOrdersToLocalStorage();
+            // Sync to Supabase (إذا مضبوط)
+            syncOrderToSupabase(orderPayload);
+            console.log('✅ Order saved:', orderId);
 
             let message = `*طلب جديد قيد الانتظار من متجر Velo (VLO)* ⚡\n`;
             message += `------------------------------------\n`;
@@ -1296,6 +1409,10 @@
 
             document.getElementById('checkout-screen-2').classList.add('hidden');
             document.getElementById('checkout-screen-3').classList.remove('hidden');
+            } catch(err) {
+                console.error('❌ executeMockPayment error:', err);
+                showNotification('خطأ!', 'حدث خطأ: ' + err.message, false);
+            }
         }
 
         function forwardToWhatsapp() {
@@ -1324,15 +1441,39 @@
                 document.getElementById('admin-login-screen').classList.add('hidden');
                 document.getElementById('admin-dashboard-view').classList.remove('hidden');
                 ordersList = getOrdersFromLocalStorage();
+
+                // إذا ما في طلبات نضيف طلب تجريبي عشان نشوف الجدول
+                if (ordersList.length === 0) {
+                    ordersList.push({
+                        orderId: 'VLO-DEMO-000001',
+                        clientPhone: '0550000000',
+                        platform: 'Sony PlayStation',
+                        email: 'sony@method.auction',
+                        password: '—',
+                        senderName: 'زبون تجريبي',
+                        totalPrice: 70,
+                        products: '1. فلوس فورزا 6 سوني (500 مليون بالمزاد) (70 ريال)',
+                        receiptImage: '',
+                        status: 'تم التنفيذ والتسليم ✅',
+                        timestamp: new Date(Date.now() - 86400000).toISOString()
+                    });
+                    saveOrdersToLocalStorage();
+                }
+
                 renderAdminOrdersTable(ordersList);
                 loadAdminReviews();
                 startAdminNotifications();
+                // Sync from Supabase في الخلفية
+                setTimeout(() => loadOrders(), 300);
             };
 
             // Check password using simple hash if crypto available
             if (window.crypto && window.crypto.subtle) {
                 hashString(passcode).then(hashed => {
                     if (hashed === correctHash) doLogin();
+                    else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
+                }).catch(() => {
+                    if (passcode === 'Aa@0536075882') doLogin();
                     else showNotification('خطأ في الرمز السري!', 'الرمز السري غير صحيح.', false);
                 });
             } else {
@@ -1342,10 +1483,11 @@
             }
         }
 
-        // Delete order from localStorage
+        // Delete order
         function deleteOrder(orderId) {
             ordersList = ordersList.filter(o => o.orderId !== orderId);
             saveOrdersToLocalStorage();
+            deleteOrderFromSupabase(orderId);
             renderAdminOrdersTable(ordersList);
             showNotification('تم الحذف', 'تم حذف الطلب بنجاح.');
         }
@@ -1414,9 +1556,22 @@
             event.target.value = '';
         }
 
-        function loadOrders() {
-            ordersList = getOrdersFromLocalStorage();
-            renderAdminOrdersTable(ordersList);
+        async function loadOrders() {
+            // Try Supabase first
+            const supabaseData = await loadOrdersFromSupabase();
+            if (supabaseData && supabaseData.length > 0) {
+                ordersList = supabaseData;
+                // Merge with localStorage (backup)
+                const localOrders = getOrdersFromLocalStorage();
+                localOrders.forEach(o => {
+                    if (!ordersList.find(x => x.orderId === o.orderId)) ordersList.push(o);
+                });
+                saveOrdersToLocalStorage();
+                renderAdminOrdersTable(ordersList);
+            } else {
+                ordersList = getOrdersFromLocalStorage();
+                renderAdminOrdersTable(ordersList);
+            }
         }
 
         function renderAdminOrdersTable(data) {
@@ -1516,6 +1671,7 @@
             if (orderIndex !== -1) {
                 ordersList[orderIndex].status = newStatus;
                 saveOrdersToLocalStorage();
+                updateOrderStatusInSupabase(orderId, newStatus);
                 renderAdminOrdersTable(ordersList);
                 showNotification('تم التحديث', `تم تغيير حالة الطلب إلى: ${newStatus}`);
             }
@@ -1610,10 +1766,23 @@
             } catch(e) { return []; }
         }
 
-        function loadAdminReviews() {
+        async function loadAdminReviews() {
             const container = document.getElementById('admin-reviews-list');
             if (!container) return;
-            adminReviewsList = getReviewsFromLocalStorage();
+
+            // Try Supabase first
+            const supabaseReviews = await loadReviewsFromSupabase();
+            if (supabaseReviews && supabaseReviews.length > 0) {
+                adminReviewsList = supabaseReviews;
+                // Merge with localStorage
+                const localReviews = getReviewsFromLocalStorage();
+                localReviews.forEach(r => {
+                    if (!adminReviewsList.find(x => x.id === r.id)) adminReviewsList.push(r);
+                });
+                saveReviewsToLocalStorage();
+            } else {
+                adminReviewsList = getReviewsFromLocalStorage();
+            }
             renderAdminReviews();
         }
 
@@ -1648,6 +1817,7 @@
         function deleteReview(id) {
             adminReviewsList = adminReviewsList.filter(r => r.id !== id);
             saveReviewsToLocalStorage();
+            deleteReviewFromSupabase(id);
             loadAdminReviews();
             loadDynamicReviews();
             showNotification('تم الحذف ✅', 'تم حذف التقييم بنجاح.');
@@ -1679,6 +1849,7 @@
             adminReviewsList = getReviewsFromLocalStorage();
             adminReviewsList.unshift(reviewPayload);
             saveReviewsToLocalStorage();
+            syncReviewToSupabase(reviewPayload);
 
             showNotification('تم الإرسال بنجاح! ⭐', 'شكراً لك على تقييمك ودعمك المستمر لمتجر ڤيلو!');
             nameInput.value = "";
@@ -1687,13 +1858,23 @@
             loadDynamicReviews();
         }
 
-        function loadDynamicReviews() {
+        async function loadDynamicReviews() {
             const container = document.getElementById('dynamic-reviews-container');
             if (!container) return;
 
-            const reviews = getReviewsFromLocalStorage();
-            reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            renderReviewsUI(reviews);
+            // Try Supabase first
+            const supabaseReviews = await loadReviewsFromSupabase();
+            if (supabaseReviews && supabaseReviews.length > 0) {
+                const localReviews = getReviewsFromLocalStorage();
+                const merged = [...supabaseReviews];
+                localReviews.forEach(r => { if (!merged.find(x => x.id === r.id)) merged.push(r); });
+                merged.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderReviewsUI(merged);
+            } else {
+                const reviews = getReviewsFromLocalStorage();
+                reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderReviewsUI(reviews);
+            }
         }
 
         function renderReviewsUI(reviews) {
