@@ -492,10 +492,11 @@
                         <h5 class="text-xs font-bold text-velo-500 uppercase tracking-widest">معلومات الحساب والتواصل:</h5>
                         
                         <div class="space-y-3 text-xs">
-                            <div>
+                            <div id="platform-dropdown-wrapper">
                                 <label class="block text-gray-400 mb-1">المنصة التي تلعب عليها الحساب:</label>
                                 <select id="user-platform" onchange="toggleCredentialsVisibility()" class="w-full bg-velo-input border border-velo-800 rounded-lg p-2.5 text-white focus:border-velo-500 focus:outline-none">
                                     <option value="Xbox / PC App">تطبيق إكس بوكس / بيسي [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
+                                    <option value="PlayStation">بلاي ستيشن (سوني) [طريقة المزاد الآمنة بدون بيانات]</option>
                                     <option value="Steam">منصة ستيم (Steam) [للبيسي والاكسبوكس فقط] (يتطلب تسجيل دخول)</option>
                                 </select>
                             </div>
@@ -1193,19 +1194,35 @@
             showNotification('تم الحذف', 'تم حذف المنتج من سلة المشتريات.');
         }
 
+        function allCartItemsAreSony() {
+            return cart.length > 0 && cart.every(item => 
+                item.platform === 'Sony PlayStation' || item.platform === 'سوني (طريقة المزاد)'
+            );
+        }
+
         function toggleCredentialsVisibility() {
-            const platform = document.getElementById('user-platform') ? document.getElementById('user-platform').value : '';
+            const platformSelect = document.getElementById('user-platform');
+            const platform = platformSelect ? platformSelect.value : '';
             const credsContainer = document.getElementById('platform-creds-container');
             const sonyInstruction = document.getElementById('sony-instruction-text');
+            const platformWrapper = document.getElementById('platform-dropdown-wrapper');
 
-            if (!credsContainer || !sonyInstruction) return;
+            if (!credsContainer || !sonyInstruction || !platformWrapper) return;
 
-            if (platform === 'PlayStation') {
+            if (allCartItemsAreSony()) {
+                platformSelect.value = 'PlayStation';
+                platformWrapper.style.display = 'none';
                 credsContainer.classList.add('hidden');
                 sonyInstruction.classList.remove('hidden');
             } else {
-                credsContainer.classList.remove('hidden');
-                sonyInstruction.classList.add('hidden');
+                platformWrapper.style.display = '';
+                if (platform === 'PlayStation') {
+                    credsContainer.classList.add('hidden');
+                    sonyInstruction.classList.remove('hidden');
+                } else {
+                    credsContainer.classList.remove('hidden');
+                    sonyInstruction.classList.add('hidden');
+                }
             }
         }
 
@@ -1488,7 +1505,7 @@
             }
 
             data.forEach(order => {
-                if (order.status.includes('تم التنفيذ')) {
+                if (order.status && order.status.includes('تم التنفيذ')) {
                     totalProfits += Number(order.totalPrice);
                     successCount++;
                 } else {
@@ -1497,8 +1514,8 @@
 
                 const row = document.createElement('tr');
                 row.className = 'border-b border-velo-800/40 hover:bg-velo-800/20 admin-order-row';
-                row.setAttribute('data-id', order.orderId.toLowerCase());
-                row.setAttribute('data-phone', order.clientPhone);
+                row.setAttribute('data-id', (order.orderId || '').toLowerCase());
+                row.setAttribute('data-phone', order.clientPhone || '');
                 
                 const receiptButtonHTML = order.receiptImage 
                     ? `<button onclick="viewReceiptImage('${order.orderId}')" class="text-velo-500 hover:underline"><i class="fa-regular fa-image"></i> عرض الإيصال</button>`
@@ -1506,16 +1523,16 @@
 
                 row.innerHTML = `
                     <td class="p-3">
-                        <span class="font-bold text-white block font-mono text-[11px]">${order.orderId}</span>
-                        <span class="text-[9px] text-gray-400 block">${order.clientPhone}</span>
+                        <span class="font-bold text-white block font-mono text-[11px]">${escapeHtml(order.orderId || '—')}</span>
+                        <span class="text-[9px] text-gray-400 block">${escapeHtml(order.clientPhone || '—')}</span>
                     </td>
-                    <td class="p-3 font-semibold text-xs">${order.platform}</td>
-                    <td class="p-3 text-[10px] max-w-[150px] truncate" title="${order.products}">${order.products.replace(/\n/g, ' • ')}</td>
-                    <td class="p-3 font-black text-white font-mono text-xs">${order.totalPrice} ريال</td>
-                    <td class="p-3 text-[11px]">${order.senderName}</td>
+                    <td class="p-3 font-semibold text-xs">${escapeHtml(order.platform || '—')}</td>
+                    <td class="p-3 text-[10px] max-w-[150px] truncate" title="${escapeHtml(order.products || '')}">${order.products ? order.products.replace(/\n/g, ' • ') : '—'}</td>
+                    <td class="p-3 font-black text-white font-mono text-xs">${order.totalPrice || 0} ريال</td>
+                    <td class="p-3 text-[11px]">${escapeHtml(order.senderName || '—')}</td>
                     <td class="p-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status.includes('تم التنفيذ') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}">
-                            ${order.status}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${order.status && order.status.includes('تم التنفيذ') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}">
+                            ${escapeHtml(order.status || 'بانتظار التحقق ⏳')}
                         </span>
                     </td>
                     <td class="p-3 text-center space-x-1 flex items-center justify-center gap-2">
@@ -1573,7 +1590,11 @@
                 if (db && ordersCollection) {
                     ordersCollection.doc(orderId).update({ status: newStatus })
                     .then(() => {
-                        showNotification('نجاح!', `تم تغيير حالة طلب العميل ${orderId} إلى تم التسليم!`);
+                        if (newStatus.includes('تم التنفيذ')) {
+                            showNotification('نجاح!', `تم تغيير حالة طلب العميل ${orderId} إلى تم التسليم!`);
+                        } else {
+                            showNotification('تم التحديث', `تم تغيير حالة الطلب إلى: ${newStatus}`);
+                        }
                         loadOrders();
                     }).catch(err => {
                         console.error("Error updating order status: ", err);
@@ -1852,9 +1873,9 @@
                     </p>
                     <div class="mt-4 flex items-center gap-2">
                         <div class="w-6 h-6 rounded-full bg-velo-800 flex items-center justify-center text-[10px] font-bold text-white">
-                            ${escapeHtml(rev.name.charAt(0))}
+                            ${escapeHtml((rev.name || '?').charAt(0))}
                         </div>
-                        <span class="text-xs font-bold text-velo-100">${escapeHtml(rev.name)}</span>
+                        <span class="text-xs font-bold text-velo-100">${escapeHtml(rev.name || 'زائر')}</span>
                     </div>
                 </div>`;
             }).join('');
@@ -1879,9 +1900,9 @@
                 ordersCollection.doc(orderId).get().then(doc => {
                     if (doc.exists) {
                         const order = doc.data();
-                        const statusColor = order.status.includes('تم التنفيذ') ? 'text-emerald-500' :
-                                           order.status.includes('مرفوض') ? 'text-red-500' :
-                                           order.status.includes('قيد التنفيذ') ? 'text-blue-400' : 'text-amber-500';
+                        const statusColor = order.status && order.status.includes('تم التنفيذ') ? 'text-emerald-500' :
+                                           order.status && order.status.includes('مرفوض') ? 'text-red-500' :
+                                           order.status && order.status.includes('قيد التنفيذ') ? 'text-blue-400' : 'text-amber-500';
                         const dateStr = order.timestamp ? new Date(order.timestamp).toLocaleDateString('ar-SA') : '—';
                         resultDiv.innerHTML = `
                             <div class="space-y-2 text-xs">
@@ -1889,9 +1910,11 @@
                                 <div class="flex justify-between"><span class="text-gray-400">تاريخ الطلب:</span><span class="text-white">${dateStr}</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">المبلغ:</span><span class="font-bold text-white">${order.totalPrice} ريال</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">المنصة:</span><span class="text-white">${escapeHtml(order.platform)}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">صاحب الطلب:</span><span class="text-white">${escapeHtml(order.senderName || '—')}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">رقم التواصل:</span><span class="text-white">${escapeHtml(order.clientPhone || '—')}</span></div>
                                 <div class="flex justify-between items-center border-t border-velo-800 pt-2 mt-2">
                                     <span class="text-gray-400 font-bold">حالة الطلب:</span>
-                                    <span class="font-black ${statusColor}">${escapeHtml(order.status)}</span>
+                                    <span class="font-black ${statusColor}">${escapeHtml(order.status || 'بانتظار التحقق ⏳')}</span>
                                 </div>
                             </div>`;
                     } else {
@@ -1913,6 +1936,7 @@
 
         // Helper to escape HTML safely
         function escapeHtml(text) {
+            if (!text) return '';
             return text
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
