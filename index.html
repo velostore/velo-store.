@@ -839,6 +839,7 @@
 
         // List of products offered
         const productsData = [
+            // 🎮 Sony PlayStation (طريقة المزاد)
             {
                 id: 'f6_sony',
                 title: 'فلوس فورزا 6 سوني (طريقة المزاد المضمونة)',
@@ -852,6 +853,8 @@
                     'تشتري أي سيارة تبيها وتعدلها على ذوقك في المزاد.',
                     'تنفيذ وشراء المزاد في الموعد المحدد مباشرة.'
                 ],
+                image: 'https://cdn.forza.net/strapi-uploads/assets/small_Forza_Horizon_6_3840x2160_Hori_Final_ac7b0063ff.jpg',
+                imageAlt: 'Forza Horizon 6 Key Art',
                 options: [
                     { name: '200 Million CR', price: 49, value: '200m', originalPrice: 69 },
                     { name: '500 Million CR', price: 69, value: '500m', originalPrice: 98 }
@@ -870,21 +873,27 @@
                     'لا نطلب دخول الحساب نهائياً، طريقة المزاد فقط.',
                     'آمن بنسبة 100% ولا يوجد أي احتمالية للباند.'
                 ],
+                image: 'https://static.wikia.nocookie.net/forzamotorsport/images/e/ec/FH5_Standard_Boxart.jpg',
+                imageAlt: 'Forza Horizon 5 Cover Art',
                 options: [
                     { name: '200 Million CR', price: 25, value: '200m', originalPrice: 45 },
                     { name: '500 Million CR', price: 59, value: '500m', originalPrice: 90 }
                 ]
             },
+
+            // 💻 فورزا 6 - PC & XBOX
             {
                 id: 'f6_pc_xbox',
                 title: 'تمكيس شامل فورزا 6 [PC & XBOX فقط]',
-                desc: 'الخدمة الأقوى والأشمل للعبة فورزا 6 على منصتي البيسي والإكس بوكس. تشمل تعديل الحساب بالكامل وبأقصى حدود المزايا لتستمتع باللعبة كلياً.',
+                desc: 'الباقة الشاملة للعبة فورزا 6 على منصتي البيسي والإكس بوكس. تشمل الفلوس + الويل سبنز + جميع السيارات + السوبر ويل سبنز.',
                 platform: 'PC & XBOX Only',
                 badge: 'FORZA HORIZON 6',
                 icon: 'fa-solid fa-desktop',
                 type: 'generic',
                 price: 79,
                 originalPrice: 119,
+                image: 'https://cdn.forza.net/strapi-uploads/assets/small_Forza_Horizon_6_3840x2160_Hori_Final_ac7b0063ff.jpg',
+                imageAlt: 'Forza Horizon 6 Key Art',
                 details: 'باقة التمكيس الشامل لـ FH6',
                 features: [
                     'فلوس $999M CR$',
@@ -894,21 +903,129 @@
                 ]
             },
             {
+                id: 'f6_pc_money',
+                title: 'تمكيس فلوس فورزا 6 [PC & XBOX فقط]',
+                desc: 'تمكيس فلوس فقط لحسابك في فورزا 6 على البيسي والإكس بوكس.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 6',
+                icon: 'fa-solid fa-coins',
+                type: 'generic',
+                price: 39,
+                image: 'https://cdn.forza.net/strapi-uploads/assets/small_Forza_Horizon_6_3840x2160_Hori_Final_ac7b0063ff.jpg',
+                imageAlt: 'Forza Horizon 6 Key Art',
+                details: 'تمكيس فلوس لـ FH6',
+                features: [
+                    'فلوس $999M CR$',
+                    'خدمة سريعة وآمنة 100%'
+                ]
+            },
+            {
+                id: 'f6_pc_spins',
+                title: 'تمكيس ويل سبنز وسوبر ويل سبنز فورزا 6 [PC & XBOX فقط]',
+                desc: 'ويل سبنز وسوبر ويل سبنز غير محدودة لحسابك في فورزا 6.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 6',
+                icon: 'fa-solid fa-ticket',
+                type: 'generic',
+                price: 49,
+                image: 'https://cdn.forza.net/strapi-uploads/assets/small_Forza_Horizon_6_3840x2160_Hori_Final_ac7b0063ff.jpg',
+                imageAlt: 'Forza Horizon 6 Key Art',
+                details: 'تمكيس ويل سبنز لـ FH6',
+                features: [
+                    'سوبر ويل سبن $999M$',
+                    'ويل سبن غير محدود',
+                    'خدمة سريعة وآمنة 100%'
+                ]
+            },
+            {
+                id: 'f6_pc_cars',
+                title: 'جميع السيارات فورزا 6 [PC & XBOX فقط]',
+                desc: 'فتح جميع سيارات فورزا 6 على منصتي البيسي والإكس بوكس.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 6',
+                icon: 'fa-solid fa-car',
+                type: 'generic',
+                price: 30,
+                image: 'https://cdn.forza.net/strapi-uploads/assets/small_Forza_Horizon_6_3840x2160_Hori_Final_ac7b0063ff.jpg',
+                imageAlt: 'Forza Horizon 6 Key Art',
+                details: 'جميع السيارات لـ FH6',
+                features: [
+                    'جميع سيارات اللعبة مفتوحة بالكامل',
+                    'آمن ومضمون 100% وبدون باند'
+                ]
+            },
+
+            // 💻 فورزا 5 - PC & XBOX
+            {
                 id: 'f5_pc_xbox',
                 title: 'تمكيس الفلوس والويل سبنز فورزا 5 [PC & XBOX فقط]',
-                desc: 'باقة ممتازة مخصصة للبيسي والإكس بوكس في فورزا 5 لتزويد حسابك بكمية هائلة وغير محدودة من رصيد الكاش واللفات لتسهيل تقدّمك في اللعبة.',
+                desc: 'باقة ممتازة مخصصة للبيسي والإكس بوكس في فورزا 5 لتزويد حسابك بكمية هائلة من رصيد الكاش واللفات.',
                 platform: 'PC & XBOX Only',
                 badge: 'FORZA HORIZON 5',
                 icon: 'fa-solid fa-desktop',
                 type: 'generic',
                 price: 39,
                 originalPrice: 65,
+                image: 'https://static.wikia.nocookie.net/forzamotorsport/images/e/ec/FH5_Standard_Boxart.jpg',
+                imageAlt: 'Forza Horizon 5 Cover Art',
                 details: 'باقة تمكيس الفلوس والويل سبنز لـ FH5',
                 features: [
                     'فلوس $999,999,999$ CR',
                     'دوران ويل سبن $999,999,999$ Spins',
                     'ليفل إكس بي مرتفع جداً للحساب',
                     'خدمة سريعة وآمنة 100%'
+                ]
+            },
+            {
+                id: 'f5_pc_money',
+                title: 'تمكيس فلوس فورزا 5 [PC & XBOX فقط]',
+                desc: 'تمكيس فلوس فقط لحسابك في فورزا 5 على البيسي والإكس بوكس.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 5',
+                icon: 'fa-solid fa-coins',
+                type: 'generic',
+                price: 25,
+                image: 'https://static.wikia.nocookie.net/forzamotorsport/images/e/ec/FH5_Standard_Boxart.jpg',
+                imageAlt: 'Forza Horizon 5 Cover Art',
+                details: 'تمكيس فلوس لـ FH5',
+                features: [
+                    'فلوس $999,999,999$ CR',
+                    'خدمة سريعة وآمنة 100%'
+                ]
+            },
+            {
+                id: 'f5_pc_spins',
+                title: 'تمكيس ويل سبن وسوبر ويل سبن فورزا 5 [PC & XBOX فقط]',
+                desc: 'ويل سبنز وسوبر ويل سبنز غير محدودة لحسابك في فورزا 5.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 5',
+                icon: 'fa-solid fa-ticket',
+                type: 'generic',
+                price: 33,
+                image: 'https://static.wikia.nocookie.net/forzamotorsport/images/e/ec/FH5_Standard_Boxart.jpg',
+                imageAlt: 'Forza Horizon 5 Cover Art',
+                details: 'تمكيس ويل سبنز لـ FH5',
+                features: [
+                    'دوران ويل سبن $999,999,999$ Spins',
+                    'سوبر ويل سبن غير محدود',
+                    'خدمة سريعة وآمنة 100%'
+                ]
+            },
+            {
+                id: 'f5_pc_cars',
+                title: 'جميع السيارات فورزا 5 [PC & XBOX فقط]',
+                desc: 'فتح جميع سيارات فورزا 5 على منصتي البيسي والإكس بوكس.',
+                platform: 'PC & XBOX Only',
+                badge: 'FORZA HORIZON 5',
+                icon: 'fa-solid fa-car',
+                type: 'generic',
+                price: 22,
+                image: 'https://static.wikia.nocookie.net/forzamotorsport/images/e/ec/FH5_Standard_Boxart.jpg',
+                imageAlt: 'Forza Horizon 5 Cover Art',
+                details: 'جميع السيارات لـ FH5',
+                features: [
+                    'جميع سيارات اللعبة مفتوحة بالكامل',
+                    'آمن ومضمون 100% وبدون باند'
                 ]
             }
         ];
@@ -920,6 +1037,16 @@
                 if (p.type === 'sony_f6' || p.type === 'sony_f5') {
                     return `
                     <div class="bg-velo-card rounded-2xl border border-velo-800/50 overflow-hidden flex flex-col justify-between hover:border-velo-600/50 transition-colors">
+                        <div class="relative h-44 overflow-hidden">
+                            <img src="${p.image}" alt="${p.imageAlt}" class="w-full h-full object-cover" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-velo-card via-velo-card/30 to-transparent"></div>
+                            <div class="absolute top-3 right-3 flex items-center gap-2">
+                                <span class="bg-velo-800/90 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase backdrop-blur-sm">${p.badge}</span>
+                            </div>
+                            <div class="absolute top-3 left-3 bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
+                                <i class="${p.icon}"></i> ${p.platform}
+                            </div>
+                        </div>
                         <div class="p-6 space-y-5">
                             <div class="flex justify-between items-start">
                                 <span class="bg-velo-800 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase">${p.badge}</span>
@@ -960,6 +1087,16 @@
                 } else {
                     return `
                     <div class="bg-velo-card rounded-2xl border border-velo-800/50 overflow-hidden flex flex-col justify-between hover:border-velo-600/50 transition-colors">
+                        <div class="relative h-44 overflow-hidden">
+                            <img src="${p.image}" alt="${p.imageAlt}" class="w-full h-full object-cover" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-velo-card via-velo-card/30 to-transparent"></div>
+                            <div class="absolute top-3 right-3 flex items-center gap-2">
+                                <span class="bg-velo-800/90 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase backdrop-blur-sm">${p.badge}</span>
+                            </div>
+                            <div class="absolute top-3 left-3 bg-zinc-700/90 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
+                                <i class="${p.icon}"></i> ${p.platform}
+                            </div>
+                        </div>
                         <div class="p-6 space-y-5">
                             <div class="flex justify-between items-start">
                                 <span class="bg-velo-800 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase">${p.badge}</span>
