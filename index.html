@@ -846,6 +846,7 @@
                 desc: 'رصيد ملايين فوري ومضمون دون الحاجة لتسليم بيانات حسابك! تعرض سيارتك بالمزاد بسعر غالي في اللعبة ونحن نشتريها منك فوراً لضمان آمان حسابك 100%.',
                 platform: 'Sony PlayStation',
                 badge: 'FORZA HORIZON 6',
+                comingSoon: true,
                 icon: 'fa-brands fa-playstation',
                 type: 'sony_f6',
                 features: [
@@ -1042,6 +1043,7 @@
                             <div class="absolute inset-0 bg-gradient-to-t from-velo-card via-velo-card/30 to-transparent"></div>
                             <div class="absolute top-3 right-3 flex items-center gap-2">
                                 <span class="bg-velo-800/90 text-velo-500 text-[10px] font-bold px-3 py-1 rounded-full border border-velo-700/50 uppercase backdrop-blur-sm">${p.badge}</span>
+                                ${p.comingSoon ? '<span class="bg-yellow-500/90 text-black text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm">🕐 قريباً</span>' : ''}
                             </div>
                             <div class="absolute top-3 left-3 bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
                                 <i class="${p.icon}"></i> ${p.platform}
@@ -1056,12 +1058,17 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <h4 class="text-xl font-bold text-white">${p.title}</h4>
-                                ${p.options.some(o => o.originalPrice) ? '<span class="bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">عرض 🔥</span>' : ''}
+                                ${p.comingSoon ? '<span class="bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">🕐 قريباً</span>' : p.options.some(o => o.originalPrice) ? '<span class="bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">عرض 🔥</span>' : ''}
                             </div>
                             <p class="text-xs text-gray-400 leading-relaxed">${p.desc}</p>
                             <ul class="text-xs space-y-2 text-gray-300 bg-velo-dark/50 p-3.5 rounded-xl border border-velo-800/30">
                                 ${p.features.map(f => `<li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-500"></i> ${f}</li>`).join('')}
                             </ul>
+                            ${p.comingSoon ? `
+                            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-5 text-center">
+                                <span class="text-yellow-500 text-sm font-bold">🕐 هذه الخدمة قريباً على PlayStation</span>
+                                <p class="text-gray-400 text-xs mt-2">فورزا 6 لم تصدر بعد على منصة PlayStation. سيتم تفعيل الخدمة فور الإصدار.</p>
+                            </div>` : `
                             <div class="space-y-2">
                                 <label class="block text-xs font-bold text-gray-400">اختر كمية الفلوس المطلوبة:</label>
                                 <div class="grid grid-cols-2 gap-3">
@@ -1072,16 +1079,24 @@
                                         </button>
                                     `).join('')}
                                 </div>
-                            </div>
+                            </div>`}
                         </div>
                         <div class="p-6 bg-velo-dark/40 border-t border-velo-800/30 flex justify-between items-center gap-4">
+                            ${p.comingSoon ? `
+                            <div>
+                                <span class="text-[10px] text-gray-400 block">الحالة:</span>
+                                <span class="text-lg font-bold text-yellow-500">سيتم الإعلان قريباً</span>
+                            </div>
+                            <button disabled class="bg-gray-700 text-gray-500 cursor-not-allowed font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-clock"></i> قريباً
+                            </button>` : `
                             <div>
                                 <span class="text-[10px] text-gray-400 block">السعر الإجمالي:</span>
                                 <span id="price-${p.type}" class="text-xl font-extrabold text-white">اختر العرض</span>
                             </div>
                             <button onclick="addSonyToCart('${p.type}')" class="bg-velo-600 hover:bg-velo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors flex items-center gap-2">
                                 <i class="fa-solid fa-cart-plus"></i> إضافة للسلة
-                            </button>
+                            </button>`}
                         </div>
                     </div>`;
                 } else {
